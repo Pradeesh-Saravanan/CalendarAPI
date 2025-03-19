@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<head>
+    <title>Calendar API</title>
+    <link href="styles/calendar-styles.css" rel="stylesheet">   
+    <link href='https://fonts.googleapis.com/css?family=Pacifico' rel='stylesheet'>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Quantico:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+
+
+</head>
+<body>
+    
+    <div class="menu">
+        <h1>Calendar API</h1>
+        <div id = "nameDisplay"></div>
+        <input type="submit" value="Logout" onclick="logout()" class="logout">
+    </div>
+    <div class ="yearly-calendar">
+        <div class="header">
+            <h1 id = "current-year">Year</h1>
+            <button id = "prev-year">Previous Year</button>
+            <button id = "next-year">Next Year</button>
+        </div>
+        <div class="months" id="calendar-months">
+            
+        </div>
+    </div>
+    <script src="scripts/calendar-script.js"></script>
+</body>

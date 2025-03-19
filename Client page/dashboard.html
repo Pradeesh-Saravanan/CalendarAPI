@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href='https://fonts.googleapis.com/css?family=Pacifico' rel='stylesheet'>
+    <title>Post Manager</title>
+    <style>
+        body{
+            background-color: #A5B68D;
+            color: black;
+            margin: 40px;
+            /* font-family: monospace; */
+        }
+        table {
+            width: 68%;
+            margin-left: 1%;
+            margin-top: 1%;
+            border-collapse: collapse;
+            background-color:#ECDFCC;
+            border-radius: 0.5rem;
+            color: black;
+        }
+        th {
+            background-color: #DA8359;
+            color: white;
+            border-collapse: collapse;
+            /* border-top-left-radius: 9px; */
+            /* border-top-right-radius: 9px; */
+        } 
+        td{
+            color: black;
+        }
+        table tr:first-child th:first-child {
+            border-top-left-radius: 0.5rem;
+        }
+        table tr:first-child th:last-child{
+            border-top-right-radius: 0.5rem;
+        }
+        table, th, td,tr {
+            /* border: 1px solid white; */
+            /* border-bottom:1px solid #76ABAE; */
+            font-size: 18px;
+        }
+        th, td {
+            padding: 9px;
+            text-align: left;
+        }
+       
+        .form-container {
+            margin-bottom: 20px;
+        }
+        .form-container input {
+            margin-right: 10px;
+        }
+        .overlay {
+            position: fixed; 
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7) Semi-transparent #A5B68D;
+            display: none; 
+            justify-content: center; 
+            align-items: center; 
+            z-index: 1000; 
+            box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 );
+            backdrop-filter: blur( 3.5px );
+            -webkit-backdrop-filter: blur( 3.5px );
+            border: 1px solid rgba( 255, 255, 255, 0.18 );
+        }
+        .popup h2{
+            margin-left: 20px;
+            font-size: 30px;
+        }
+        .popup button{
+            margin-left: 20px;
+        }
+        .popup {
+            /* background-color: darkslategray; */
+            background-color:#ECDFCC;
+            /* box-shadow: 0 10px 0 10px; */
+            padding: 40px;
+            font-family: 'Pacifico';
+            border: #DA8359 solid 2px;
+            border-radius: 10px;
+            position: relative; 
+            color: #DA8359;
+            width: 250px; 
+        }
+        .popupTextBox{
+            background-color: white;
+            color: black;
+            border: 2px;
+            font-size: medium;
+            border-radius: 5px;
+            margin: 20px;
+            margin-left: 20px;
+            padding: 10px;
+        }
+        .close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 20px;
+            border:none;
+            background:transparent;
+            border-radius: 0.5rem;
+            cursor: pointer;
+        }
+        .logout{
+            position: absolute;
+            top: 50px;
+            right: 50px;
+            font-size: 20px;
+            border:none;
+            background:transparent;
+            border-radius: 0.5rem;
+            cursor: pointer;
+        }
+        .refresh{
+            position: absolute;
+            right: 33%;
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 16px;
+            border:none;
+        }
+        .button{
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 16px;
+            border: none;
+        }
+        .textBox{
+            background-color: white;
+            color: black;
+            border: 2px;
+            font-size: larger;
+            border-radius: 3px;
+            margin: 5px;
+        }
+        .menu{
+            margin-left: 40px;
+        }
+        .menu h1, .menu div{
+            font-family: 'Pacifico';
+        }
+        .menu h1{
+            font-size: 45px;
+        }
+        .container {
+                display: flex;
+                align-items: center; /* Vertically align items */
+                gap: 10px; /* Adds space between elements */
+                width: 400px;
+                margin-left: 40px;
+                font-family: monospace;
+        }
+        .container #create{
+            margin-right: 200px;
+        }
+        .textBox {
+            flex: 5; /* Optional: Adjust width of the input box */
+        }
+
+    </style>
+</head>
+<body>
+    <div class="menu">
+    <h1>Post Manager ۾</h1>
+    <div id = "nameDisplay"></div>
+    <input type="submit" value="Logout" onclick="logout()" class="logout">
+    </div>
+    <br><br>
+    <div id = "Overlay" class="overlay">
+        <div id ="popupForm" class="popup">
+            <span id="closePopupButton" class="close">&times;</span>
+            <h2>Add New Post</h2>
+            <input type="text" id="title" placeholder="Title" class="popupTextBox">
+            <input type="text" id="body" placeholder="Body" class="popupTextBox"><br>
+            <button onclick="addPost()" id = "addbutton" class="button">Create</button>
+        </div>
+    </div>
+    <div id = "updatePage" class="overlay">
+        <div id ="updatepopupForm" class="popup">
+            <span id="updateclosePopupButton" class="close">&times;</span>
+            <h2>Update Post</h2>
+            <input type="text" id="updateTitle" placeholder="Title" class="popupTextBox">
+            <input type="text" id="updateBody" placeholder="Body" class="popupTextBox">
+            <button onclick="updatePost()" id = "updatebutton" class="button">Save</button>
+        </div>
+    </div>
+    <br><br>
+    <div class="container">
+    <button id = "create" class="button">Create</button>
+    <input type="text" id="searchBox" placeholder="Search" class="textBox">
+    <button onclick="searchTitleOnPost()" class="button">Title</button>
+    <button onclick="searchContentOnPost()" class="button">Body</button>
+    <button onclick="fetchPosts()" class="refresh">Refresh</button>
+    </div>
+    <div class="frame">
+    <table id="postsTable">
+        <thead >
+            <tr>
+                <th>Title</th>
+                <th>Body</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table></div><br><br>
+    <script>
+        const url = new URLSearchParams(window.location.search);
+        const user = url.get("user");
+
+        authenticate();
+        const openPopupButton = document.getElementById('create');
+        const closePopupButton = document.getElementById('closePopupButton');
+        const popupOverlay = document.getElementById('Overlay');
+        const updateopenPopupButton = document.getElementById('updatebutton');
+        const updateclosePopupButton = document.getElementById('updateclosePopupButton');
+        const updatepopupOverlay = document.getElementById('updatePage');
+        const buttonText = document.getElementById("addbutton");
+        openPopupButton.addEventListener('click', (event) => {
+            popupOverlay.style.display = 'flex';
+        });
+
+        updateopenPopupButton.addEventListener('click', (event) => {
+            updatepopupOverlay.style.display = 'flex';
+        });
+
+        closePopupButton.addEventListener('click', () => {
+            popupOverlay.style.display = 'none';
+        });
+        updateclosePopupButton.addEventListener('click', () => {
+            updatepopupOverlay.style.display = 'none';
+        });
+
+        window.addEventListener('click', (event) => {
+            if (event.target === popupOverlay ) {
+                popupOverlay.style.display = 'none';
+            }
+            else if(event.target === updatepopupOverlay){
+                updatepopupOverlay.style.display = 'none';
+            }
+        });
+
+        
+
+        async function authenticate(){
+            try {
+                const response = await fetch(`http://localhost:8080/StorageAPI_Struts/dashboard/get?user=${user}`,
+                {method: 'GET',
+                credentials:"include",}
+            );
+            console.log("authenticate "+response.ok)
+            // alert("Started authentication...");    
+            if (!response.ok) {
+                // throw new Error("Failed to fetch posts");
+                const posts = await response.json();
+                if(posts.status=="failed"){
+                    // alert("Authentication failed! Login please");
+                    window.location.href="login.html";
+                    return;
+                }
+            }
+            else{
+                // alert("successful....");
+                console.log("calling fetchposts...");
+                fetchPosts();
+            }
+        } 
+        catch{
+            window.location.href="login.html";
+            console.error("Error authentication:", error.API_URL);
+        }
+    }
+        async function fetchPosts() {
+            // alert("authenticated");
+            try {
+                const response = await fetch(`http://localhost:8080/StorageAPI_Struts/dashboard/get?user=${user}`,
+                {credentials: 'include'}
+            );
+            document.getElementById("nameDisplay").innerHTML = `<h2>Welcome ${user}</h2>`;
+                const raw = await response.text();
+                const posts = JSON.parse(raw);
+                const tableBody = document.querySelector("#postsTable tbody");
+                tableBody.innerHTML = ""; 
+                
+                posts.forEach(post => {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                    <td>${post.title}</td>
+                    <td>${post.body}</td>
+                    <td><button onClick="updatePreview('${post.title}','${post.body}')" style="background-color: white;border-radius: 6px;border:none">Update</button>
+                        <button onClick="deletePost('${post.title}')" style="background-color: white;border-radius: 5px;border:none;">Delete</button></td>
+                        
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                document.getElementById('title').value='';
+                document.getElementById('body').value='';
+            } catch (error) {
+                console.error("Error fetching posts:", error.API_URL);
+            }
+        }
+        async function addPost() {
+            const title = document.getElementById("title").value;
+            const body = document.getElementById("body").value;
+            if (!title || !body) {
+                alert("Please fill in both title and body.");
+                return;
+            }
+
+            try {
+                const response = await fetch(`http://localhost:8080/StorageAPI_Struts/dashboard/post?user=${user}`, {
+                    method: "POST",
+                    credentials:"include",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ "title":title, "body":body}),
+
+                });
+
+                if (!response.ok) throw new Error("Failed to add post");
+                fetchPosts(); 
+                document.getElementById('title').value='';
+                document.getElementById('body').value='';
+                popupOverlay.style.display = 'none';
+            } catch (error) {
+                console.error("Error adding post:", error);
+            }
+        }
+        function updatePreview(title,body){
+            document.getElementById('updatePage').style.display = 'flex';
+            document.getElementById('updateTitle').value = title;
+            document.getElementById('updateBody').value = body;
+        }
+        async function updatePost() {
+            const title = document.getElementById("updateTitle").value;
+            const body = document.getElementById("updateBody").value;
+
+            if (!title || !body) {
+                alert("Please fill in both title and new body.");
+                return;
+            }
+
+            try {
+                const response = await fetch(`http://localhost:8080/StorageAPI_Struts/dashboard/put?user=${user}`, {
+                    method: "PUT",
+                    credentials:"include",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ title, body})
+                });
+
+                if (!response.ok) throw new Error("Failed to update post");
+                document.getElementById('updateTitle').value='';
+                document.getElementById('updateBody').value='';
+                fetchPosts(); 
+                document.getElementById('updatePage').style.display = 'none';
+            } catch (error) {
+                console.error("Error updating post:", error);
+            }
+            
+        }
+        async function searchTitleOnPost() {
+            const key = document.getElementById('searchBox').value;
+            if (!key) {
+                alert("Enter a value");
+                return;
+            }
+
+            try {
+                const response = await fetch(`http://localhost:8080/StorageAPI_Struts/dashboard/get?user=${user}&keyTitle=${key}`, {
+                    method: 'GET',
+                    credentials:"include",
+                });
+                if (!response.ok) {
+                    throw new Error('Failed to fetch data');
+                }
+
+                const raw = await response.text(); 
+                const posts = JSON.parse(raw);
+                const tableBody = document.querySelector("#postsTable tbody");
+                tableBody.innerHTML = ""; 
+
+                posts.forEach(post => {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                        <td>${post.title}</td>
+                        <td>${post.body}</td>
+                        <td><button onClick="updatePreview('${post.title}','${post.body}')" style="background-color: white;border-radius: 6px;">Update</button>
+                            <button onClick="deletePost('${post.title}')" style="background-color: white;border-radius: 5px;">Delete</button></td>
+             
+                    `;
+                    tableBody.appendChild(row);
+                });
+            } catch (error) {
+                console.error("Error searching posts:", error);
+                alert("Failed to search posts. Check console for details.");
+            }
+        }
+        async function searchContentOnPost() {
+            const key = document.getElementById('searchBox').value;
+            if (!key) {
+                alert("Enter a value");
+                return;
+            }
+
+            try {
+                const response = await fetch(`http://localhost:8080/StorageAPI_Struts/dashboard/get?user=${user}&keyContent=${key}`, {
+                    method: 'GET',
+                    credentials:"include",
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch data');
+                }
+
+                const raw = await response.text(); 
+                const posts = JSON.parse(raw);
+                const tableBody = document.querySelector("#postsTable tbody");
+                tableBody.innerHTML = ""; 
+
+                posts.forEach(post => {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                        <td>${post.title}</td>
+                        <td>${post.body}</td>
+                        <td><button onClick="updatePreview('${post.title}','${post.body}')" style="background-color: white;border-radius: 6px;">Update</button>
+                            <button onClick="deletePost('${post.title}')" style="background-color: white;border-radius: 5px;">Delete</button></td>
+
+                    `;
+                    tableBody.appendChild(row);
+                });
+                // document.getElementById('keyContent').value='';
+            } catch (error) {
+                console.error("Error searching posts by content:", error);
+                alert("Failed to search posts by content. Check console for details.");
+            }
+        }
+        async function deletePost(title) {
+            try {
+                const response = await fetch(`http://localhost:8080/StorageAPI_Struts/dashboard/delete?user=${user}`, {
+                    method: "DELETE",
+                    headers: { "Content-Type": "application/json" },
+                    credentials:"include",
+                    body: JSON.stringify({ title})
+                });
+
+                if (!response.ok) throw new Error("Failed to delete post");
+                fetchPosts(); 
+            } catch (error) {
+                console.error("Error deleting post:", error);
+            }
+        }
+        async function logout() {
+            try {
+                const response = await fetch("http://localhost:8080/StorageAPI_Struts/logout", {
+                    method: "GET",
+                    credentials: "include", 
+                });
+                const raw = await response.text();
+                const data = JSON.parse(raw);
+                console.log(data.status);
+                if (response.ok || data.status === "success") {
+                    // alert("logout");
+                    window.location.href = `login.html`;
+                }
+                else if(data.status=='failed'){
+                    alert(data.message);
+                    window.location.href = `login.html`;
+                }
+                else{
+                    console.log()
+                }
+            } catch (error) {
+                console.log(error);
+                // showError(error.message);
+            }
+        }
+    </script>
+</body>
+</html>
