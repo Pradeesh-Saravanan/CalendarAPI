@@ -26,7 +26,7 @@ import com.model.User;
 import com.opensymphony.xwork2.ActionSupport;
 
 public class Login extends ActionSupport{
-	private final String ORIGIN_STRING = "http://127.0.0.1:5500";
+	private final String ORIGIN_STRING = "http://127.0.0.1:5501";
 	private Map<String,String> map = new HashMap<>();
 	private String jsonString = "";
 	private InputStream inputStream;

@@ -4,6 +4,7 @@
         "-//Apache Software Foundation//DTD Struts Configuration 2.5//EN"
         "https://struts.apache.org/dtds/struts-2.5.dtd">        
         <struts>
+        
         	<package name ="login-package" namespace="/login" extends="struts-default">
         		<action name = "post" method = "doPost" class = "com.service.Login">
         			<result name = "success" type = "stream">
@@ -12,9 +13,14 @@
         			</result>
         		</action>
         	</package>
+        	
         	<package name = "calendar-package" namespace="/calendar" extends = "struts-default">
         		<action name = "post" method = "doPost" class = "com.service.CalendarAction">
         			<result name = "success" type = "stream">
+        				<param name = "contentType">application/json</param>
+        				<param name = "inputName">inputStream</param>
+        			</result>
+        			<result name = "error" type = "stream">
         				<param name = "contentType">application/json</param>
         				<param name = "inputName">inputStream</param>
         			</result>
@@ -25,11 +31,19 @@
         				<param name = "contenType">application/json</param>
         				<param name="inputName">inputStream</param>
         			</result>
+				<result name = "error" type = "stream">
+        				<param name = "contentType">application/json</param>
+        				<param name = "inputName">inputStream</param>
+        			</result>
         		</action>
         		
         		<action name="put" method="doPut" class = "com.service.CalendarAction">
         			<result name = 'success' type='stream'>
         				<param name='contentType'>application/json</param>
+        				<param name = "inputName">inputStream</param>
+        			</result>
+        			<result name = "error" type = "stream">
+        				<param name = "contentType">application/json</param>
         				<param name = "inputName">inputStream</param>
         			</result>
         		</action>
@@ -38,6 +52,23 @@
         			<result name = 'success' type='stream'>
         				<param name = 'contentType'>application/json</param>
         				<param name ='inputName'>inputStream</param>
+        			</result>
+        			<result name = "error" type = "stream">
+        				<param name = "contentType">application/json</param>
+        				<param name = "inputName">inputStream</param>
+        			</result>
+        		</action>
+        	</package>
+        	
+        	<package name= "event-package" namespace="/event" extends="struts-default">
+        		<action name="post" method="doPost" class='com.service.EventAction'>
+        			<result name = "success" type = 'stream'>
+        				<param name = "contentType">application/json</param>
+        				<param name = "inputName">inputStream</param>
+        			</result>
+        			<result name = "error" type='stream'>
+        				<param name = "contentType">application/json</param>
+        				<param name = 'inputName'>inputStream</param>
         			</result>
         		</action>
         	</package>
@@ -50,5 +81,6 @@
         			</result>
         		</action>
         	</package>
+        	
         </struts>
         

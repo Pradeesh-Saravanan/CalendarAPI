@@ -8,16 +8,140 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Quantico:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
 
-
 </head>
 <body>
-    
-    <div class="menu">
+    <script>
+    //         document.addEventListener("DOMContentLoaded", function() {
+    //   const selectElement = document.getElementById("recurrence_type");
+
+    //   selectElement.addEventListener('change', function(event) {
+    //     console.log("Selected value changed!");
+    //     console.log("Value:", event.target.value); // Or selectElement.value
+    //   });
+    // });
+    </script>
+    <div class="menu" id = "menu">
         <h1>Calendar API</h1>
         <div id = "nameDisplay"></div>
         <input type="submit" value="Logout" onclick="logout()" class="logout">
     </div>
-    <div class ="yearly-calendar">
+
+
+<div class="sidebar" id="mySidebar">
+  <button class="closebtn" onclick="closeSidebar()">×</button>
+  <div id = "calendar_list">
+    
+  </div>
+</div>
+
+<div id = "tab">
+    <button class="openbtn" onclick="openSidebar()">☰</button>
+    <div id="calendar_name_display"></div>
+    <button id = "create" class="button">New Calendar</button>
+  </div>
+
+
+  <div id = "Overlay" class="overlay">
+    <div id ="popupForm" class="popup">
+        <span id="closePopupButton" class="close">&times;</span>
+        <h2 id = "form_title">New Calendar</h2>
+        <input type="text" id="calendar_name" placeholder="Calendar name" class="popupTextBox">
+        <input type="text" id="description" placeholder="Description" class="popupTextBox"><br>
+        <button onclick="addCalendar()" id = "form_button" class="button">Create</button>
+    </div>
+</div>
+
+<div id = "event_overlay" class="overlay">
+    <div id ="event_popupForm" class="popup">
+
+        <span id="event_closePopupButton" class="close">&times;</span>
+
+        <h2 id = "event_form_title">New Event</h2>
+
+        <input type="text" id="event_name" placeholder="Event name" class="popupTextBox">
+
+        <input type="text" id="event_description" placeholder="Description" class="popupTextBox"><br>
+
+        <div style="margin-left: 40px;">
+            <input type="checkbox" id="all_day">
+            <label for="all_day">All day</label><br>
+
+            <label for="event-start-date">Start date</label>
+            <input type="date" id="event-start-date" class="popupTextBox">
+            <input type="time" id="event-start-time" class="popupTextBox"><br>
+
+            <label for="event-end-date">End date</label>
+            <input type="date" id="event-end-date" class="popupTextBox">
+            <input type="time" id="event-end-time" class="popupTextBox"><br>
+
+            <input type="checkbox" id="repeat" >
+            <label for="repeat">Repeat</label><br>
+
+            <div id = "recurrence">
+                <label for="recurrence_type">Recurrence Type</label>
+                <select name="type" id="recurrence_type" class="popupTextBox">
+                    <option value="daily">Daily</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="monthly">Monthly</option>
+                    <option value="yearly">Yearly</option>
+                    <option value="custom">Custom</option>
+                </select> 
+            </div>
+
+            <div id = "custom_recurrence_type_div">
+                <label for="custom_recurrence_type">Frequency</label>
+                <select name="custom_type" id="custom_recurrence_type" class="popupTextBox">
+                    <option value="daily">Daily</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="monthly">Monthly</option>
+                    <option value="yearly">Yearly</option>
+                </select> 
+            </div>
+
+            <div id = "recurrence_interval_div">
+                <label for="recurrence_interval">Repeat Interval</label>
+                <input type="text" id="recurrence_interval"  class="popupTextBox">
+            </div>
+            <div id = "day_of_week_div">
+                <label for="day_of_week">Day</label>
+                <select name="day" id="day_of_week" class="popupTextBox">
+                    <option value="1">Mon</option>
+                    <option value="2">Tue</option>
+                    <option value="3">Wed</option>
+                    <option value="4">Thu</option>
+                    <option value="5">Fri</option>
+                    <option value="6">Sat</option>
+                    <option value="7">Sun</option>
+                    </select><br>
+            </div>
+            <div id="date_of_month_div">
+                <label for="date_of_month">Date</label>
+                <input type="number" id = "date_of_month" class="popupTextBox"><br>
+            </div>
+            <div id = "month_of_year_div">
+                <label for="month_of_year">Year</label>
+                <select name="year" id="month_of_year" class="popupTextBox">
+                    <option value="1">Jan</option>
+                    <option value="2">Feb</option>
+                    <option value="3">Mar</option>
+                    <option value="4">Apr</option>
+                    <option value="5">May</option>
+                    <option value="6">Jun</option>
+                    <option value="7">Jul</option>
+                    <option value="8">Aug</option>
+                    <option value="9">Sep</option>
+                    <option value="10">Oct</option>
+                    <option value="11">Nov</option>
+                    <option value="12">Dec</option>
+                    </select><br>
+            </div>
+        </div>
+        <button onclick="addEvent()" id = "event_form_button" class="button">Add</button>
+
+    </div>
+</div>
+
+    <div class ="yearly-calendar" id = "view">
         <div class="header">
             <h1 id = "current-year">Year</h1>
             <button id = "prev-year">Previous Year</button>
