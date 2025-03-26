@@ -10,20 +10,10 @@
 
 </head>
 <body>
-    <script>
-    //         document.addEventListener("DOMContentLoaded", function() {
-    //   const selectElement = document.getElementById("recurrence_type");
-
-    //   selectElement.addEventListener('change', function(event) {
-    //     console.log("Selected value changed!");
-    //     console.log("Value:", event.target.value); // Or selectElement.value
-    //   });
-    // });
-    </script>
     <div class="menu" id = "menu">
         <h1>Calendar API</h1>
         <div id = "nameDisplay"></div>
-        <input type="submit" value="Logout" onclick="logout()" class="logout">
+        <input type="submit" value="Logout" id = "logoutbtn" onclick="logout()" class="logout">
     </div>
 
 
@@ -34,12 +24,21 @@
   </div>
 </div>
 
+<div class="rightsidebar" id="myRightSidebar">
+    <button class="rightclosebtn" onclick="closeRightSidebar()">×</button>
+
+    <div id = "event_list">
+      
+    </div>
+  </div>
 <div id = "tab">
     <button class="openbtn" onclick="openSidebar()">☰</button>
     <div id="calendar_name_display"></div>
     <button id = "create" class="button">New Calendar</button>
   </div>
 
+    <button class="rightbtn" id="rightbtn" onclick="openRightSidebar()">Events</button>
+ 
 
   <div id = "Overlay" class="overlay">
     <div id ="popupForm" class="popup">

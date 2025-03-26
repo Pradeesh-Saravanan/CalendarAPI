@@ -8,6 +8,7 @@ body{
     font-weight: 400;
     font-style: normal;
 }
+
 .logout{
     position: absolute;
     top: 50px;
@@ -40,8 +41,23 @@ body{
     transition: 0.5s; /* Smooth transition for opening/closing */
     padding-top: 60px;
   }
+  .rightsidebar {
+    height: 100%;
+    width: 0; /* Initially hidden */
+    position: fixed;
+    z-index: 1;
+    top: 0;
+    right: 0;
+    /* background-color: #111; */
+    background-color: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur( 3.5px );
+    -webkit-backdrop-filter: blur(3.5px );
+    overflow-x: hidden; /* Disable horizontal scroll */
+    transition: 0.5s; /* Smooth transition for opening/closing */
+    padding-top: 60px;
+  }
   
-  .sidebar div {
+  .sidebar div{
     padding: 8px 8px 8px 32px;
     text-decoration: none;
     font-size: 20px;
@@ -49,12 +65,20 @@ body{
     display: block;
     transition: 0.3s;
   }
-  
-  .sidebar div:hover {
+  .rightsidebar div{
+    padding: 8px 8px 8px 32px;
+    text-decoration: none;
+    font-size: 20px;
+    color: #fff;
+    display: block;
+    transition: 0.3s;
+  }
+  .sidebar div:hover  .rightsidebar div:hover{
     color: #f1f1f1;
   }
+
   
-  .sidebar .closebtn {
+  .sidebar  .rightsidebar{
     background-color: transparent;
     position: absolute;
     color: white;
@@ -62,6 +86,19 @@ body{
     right: 25px;
     font-size: 36px;
     margin-left: 50px;
+  }
+  .rightclosebtn,  .closebtn{
+    background-color: transparent;
+    position: absolute;
+    color: white;
+    top: 0;
+    right: 25px;
+    font-size: 36px;
+    margin-left: 50px;
+  }
+
+  .rightpanelBtn{
+    border:none; background-color:transparent; font-size:25px; color:white;
   }
   
   #tab{
@@ -74,7 +111,17 @@ body{
     transition: margin-left .5s;
     padding: 16px;
   }
-  
+  .rightbtn{
+    position: absolute;
+    top: 120px;
+    right: 10px;
+    font-size: 25px;
+    cursor: pointer;
+    background-color: transparent;
+    color: black;
+    padding: 10px 15px;
+    border: none;
+  }
   .openbtn {
     font-size: 35px;
     cursor: pointer;
@@ -138,7 +185,7 @@ body{
 .weekdays, .days{
     display: grid;
     grid-template-columns: repeat(7,1fr);
-    gap: 5px;
+    gap: 15px;
     height: fit-content;
 }
     
@@ -272,6 +319,29 @@ button {
     margin-left: 40px;
 }
 
+
+
+.day-events {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px;
+    justify-content: center;
+    margin-top: 2px;
+}
+
+.event-dot {
+    width: 3px;
+    height: 3px;
+    background-color: #FEBF63;
+    border-radius: 90%;
+    /* cursor: pointer; */
+}
+
+.event-more {
+    font-size: 0.7em;
+    color: #666;
+    cursor: pointer;
+}
 /* button:hover {
     background: #FDFAE6;
 } */

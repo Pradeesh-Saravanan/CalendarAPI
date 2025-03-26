@@ -10,7 +10,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletException;
@@ -52,6 +54,53 @@ public class EventAction extends ActionSupport{
 		response.setHeader("Access-Control-Allow-Headers","Content-Type,Authorization");
 		response.setHeader("Access-Control-Allow-Credentials","true");
 		response.setStatus(HttpServletResponse.SC_OK);	
+	}
+	public String doGet() throws ServletException, IOException, ClassNotFoundException, SQLException{
+		helper();
+		if("OPTIONS".equals(request.getMethod())) {
+			doOptions(request,response);
+			return NONE;
+		}
+		response.setHeader("Access-Control-Allow-Origin",ORIGIN_STRING);
+		response.setHeader("Access-Control-Allow-Methods","GET,PUT,DELETE,POST,OPTIONS");
+		response.setHeader("Access-Control-Allow-Headers","Content-Type,Authorization");
+		response.setHeader("Access-Control-Allow-Credentials","true");
+		
+		try {
+			String user_query = "select * from events where calendar_id = ?";
+			PreparedStatement stmt = conn.prepareStatement(user_query);
+			stmt.setString(1,request.getParameter("calendar_id"));
+			ResultSet rs = stmt.executeQuery();
+			List<Event> events = new ArrayList<>();
+			if(rs==null) {
+				map.put("status","failed");
+				map.put("message","No records found");					
+				Gson gson = new Gson();
+				inputStream = new ByteArrayInputStream(gson.toJson(map).getBytes(StandardCharsets.UTF_8));
+				return ERROR;
+			}
+			while(rs.next()) {
+				String title = rs.getString("title");
+				String desc = rs.getString("description");
+				boolean all_day = rs.getBoolean("all_day");
+				String start_time = rs.getString("start_time");
+				String end_time = rs.getString("end_time");
+				boolean repeat = rs.getBoolean("repeat");
+				events.add(new Event(request.getParameter("calendar_id"),title,desc,all_day,start_time,end_time,repeat));
+			}
+			Gson gson = new Gson();
+			inputStream = new ByteArrayInputStream(gson.toJson(events).getBytes(StandardCharsets.UTF_8));
+			return SUCCESS;
+		}
+		catch(Exception e) {
+			map.put("status","failed");
+			map.put("message",e.getMessage());
+			
+			Gson gson = new Gson();
+			inputStream = new ByteArrayInputStream(gson.toJson(map).getBytes(StandardCharsets.UTF_8));
+			return ERROR;
+		}
+		
 	}
 	
 	public String doPost() throws ServletException, IOException, ClassNotFoundException, SQLException{
