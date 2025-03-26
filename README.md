@@ -14,7 +14,7 @@ Struts based Calendar API
 
 - Redesigned calendars table by adding constraint for unique calendar name 
 - Changed PUT and DELETE operations to work upon calendar id 
-- Created Event Action for CRUD events from request 
+- Created Event Action for create events from request using postman
 - Overloaded event class for accepting events with repeat and without one 
 
 - Used a simple UI calendar.html for frontend
@@ -25,3 +25,8 @@ Struts based Calendar API
 - Linked the event popup form to every date in the calendar
 - Used lazy data filler in date based on repeat field
 - Made the event create form dynamic for custom repeat events 
+
+
+## 25/03/2025
+
+- Moved the request part to frontend for event create operation

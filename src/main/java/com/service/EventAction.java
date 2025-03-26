@@ -59,7 +59,7 @@ public class EventAction extends ActionSupport{
 		helper();
 		if("OPTIONS".equals(request.getMethod())) {
 			doOptions(request,response);
-			return SUCCESS;
+			return NONE;
 		}
 		response.setHeader("Access-Control-Allow-Origin",ORIGIN_STRING);
 		response.setHeader("Access-Control-Allow-Methods","GET,PUT,DELETE,POST,OPTIONS");
@@ -96,19 +96,47 @@ public class EventAction extends ActionSupport{
 					rows = 0;
 					query ="select event_id from events where title = ?";
 					stmt = conn.prepareStatement(query);
+					stmt.setString(1,event.getTitle());
 					ResultSet rs = stmt.executeQuery();
 					String event_id="";
 					if(rs.next()) {
 						event_id = rs.getString("event_id");
 					}
-					query = "insert into recurrence(event_id,recurrence_type,recurrence_interval,day_of_the_week,date_of_month,month_of_year) values(?,?,?,?,?,?)";
+//					event.setRecurrence_type(event.getRecurrence_type().split(" ")[1]);
+					String event_type = event.getRecurrence_type().split(" ")[1];
+					String mod = "",mod_val = "",mod_query="";
+					switch(event_type) {
+					case "daily":
+						break;
+					case "weekly":
+						mod = ",day_of_week";
+						mod_val = event.getDay_of_week();
+						mod_query=",?";
+						break;
+					case "monthly":
+						mod = ",date_of_month";
+						mod_query=",?";
+						mod_val = event.getDate_of_month();
+						break;
+					case "yearly":
+						mod = ",month_of_year";
+						mod_query=",?";
+						mod_val = event.getMonth_of_year();
+						break;
+					default:
+						break;
+					}
+					System.out.println(mod+" "+mod_val);
+					query = "insert into recurrence(event_id,recurrence_type,recurrence_interval"+mod+") values(?,?,?"+mod_query+")";
 					stmt= conn.prepareStatement(query);
+					
 					stmt.setString(1,event_id);
 					stmt.setString(2,event.getRecurrence_type());
 					stmt.setString(3,event.getRecurrence_interval());
-					stmt.setString(4,event.getDay_of_week());
-					stmt.setString(5,event.getDate_of_month());
-					stmt.setString(6,event.getMonth_of_year());
+					if(mod!="") {
+						stmt.setString(4,mod_val);
+					}
+					
 					rows= stmt.executeUpdate();
 					if(rows<1) {
 						map.put("message","Unable to insert repeat event");

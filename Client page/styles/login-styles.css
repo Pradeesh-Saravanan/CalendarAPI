@@ -1,6 +1,7 @@
 body {
     /* background-color: darkslategray; */
-    background-color: #A5B68D;
+    /* background-color: #A5B68D; */
+    background-color: #8CC0DE;
     color: white;
     /* font-family: Arial, sans-serif; */
     font-family: monospace;
@@ -12,13 +13,13 @@ body {
 }
 .login-container {
     /* background-color: rgba(0, 0, 0, 0.7); */
-    background-color: #ECDFCC;
+    background-color: #E4EFE7;
     width: 250px;
     padding: 70px;
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
     text-align: center;
-    color: #DA8359;
+    color: #FEBF63;
 }
 .login-container h1 {
     margin-bottom: 30px;

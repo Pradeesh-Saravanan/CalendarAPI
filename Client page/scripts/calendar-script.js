@@ -9,7 +9,7 @@ let currentYear = new Date().getFullYear();
 const url = new URLSearchParams(window.location.search);
 const user = url.get("user");
 
-const calendar_id = 0;
+let calendar_id = 0;
 
 fetchCalendars();
 
@@ -102,13 +102,14 @@ function openSidebar() {
   async function fetchCalendars() {
     // alert("authenticated");
     try {
-        const response = await fetch(`http://localhost:8080/CalendarAPI/calendar/get?user=root`,
+        const response = await fetch(`http://localhost:8080/CalendarAPI/calendar/get?user=${user}`,
 
     );
     const list = document.getElementById("calendar_list");
     list.innerHTML = ``;
     const raw = await response.text()
     const data = JSON.parse(raw)
+    changeView(data[0].calendar_name,data[0].calendar_id);
     data.forEach(element=>{
         const row = document.createElement("div");
         row.innerHTML=`<button onClick="changeView('${element.calendar_name}','${element.calendar_id}')" style=" border:none; background-color:transparent; font-size:30px; color:white">${element.calendar_name}</button>
@@ -119,20 +120,19 @@ function openSidebar() {
         console.error("Error fetching posts:", error.API_URL);
     }
 }
-
-async function addEvent(year,month,day){
+async function addEvent(year_in,month_in,day_in){
     event_popupOverlay.style.display = 'flex';
 
     // let package = new Map();
     
-    const title = document.getElementById("event_title");
-    const description = document.getElementById("event_description");
     
     
-    day = String(day).padStart(2,0);
-    month = String(month).padStart(2,0);
-    const hour = new Date().getHours();
-    const minutes = new Date().getMinutes();
+    const year = year_in;
+    const day = String(day_in).padStart(2,0);
+    const month = String(month_in).padStart(2,0);
+    const hour = String(new Date().getHours()).padStart(2,'0');
+    const minutes = String(new Date().getMinutes()).padStart(2,'0');
+    console.log(`${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`);
     console.log(year,month,day,hour,minutes);
     document.getElementById("event-start-date").value = `${year}-${month}-${day}`;
     document.getElementById("event-start-time").value = `${hour}:${minutes}`;
@@ -140,19 +140,20 @@ async function addEvent(year,month,day){
     document.getElementById("all_day").addEventListener('change',(event)=>{
         if(document.getElementById("all_day").checked){
             document.getElementById("event-end-date").value = `${year}-${month}-${day}`;
-            // document.getElementById("event-start-time").value = `${hour}:${minutes}`;
-            // document.getElementById("event-end-time").value = `${23}:${59}`;
+            document.getElementById("event-start-time").value = `${hour}:${minutes}`;
+            document.getElementById("event-end-time").value = `${23}:${59}`;
             document.getElementById("event-start-time").style.display = 'none';
             document.getElementById("event-end-time").style.display = 'none';
         }
         else{
             document.getElementById("event-start-time").style.display = '';
             document.getElementById("event-end-time").style.display = '';
-            document.getElementById("event-end-time").value = ``;
-            document.getElementById("event-end-date").value = ``;
+            // document.getElementById("event-end-time").value = ``;
+            // document.getElementById("event-end-date").value = ``;
         }
     });
 
+    const recurrence_type_value = null;
     document.getElementById("repeat").addEventListener('change',(event)=>{
         event.preventDefault();
         if(document.getElementById("repeat").checked){
@@ -160,6 +161,7 @@ async function addEvent(year,month,day){
                 const selectElement = document.getElementById("recurrence_type");
           
                 selectElement.addEventListener('change', function(event) {
+                    // recurrence_type_value = selectElement.value;
                     if(selectElement.value==="custom"){
                         document.getElementById("custom_recurrence_type_div").style.display = 'block';
                         document.getElementById("recurrence_interval_div").style.display = 'block';
@@ -173,19 +175,28 @@ async function addEvent(year,month,day){
                                 case "weekly":
                                     document.getElementById("day_of_week_div").style.display = 'block';
                                     document.getElementById("date_of_month_div").style.display = 'none';
+                                    document.getElementById("date_of_month").value = '';
+                                    document.getElementById("month_of_year").value = '';
                                     document.getElementById("month_of_year_div").style.display = 'none';
                                     break;
                                 case "monthly":
                                     document.getElementById("date_of_month_div").style.display = 'block';
+                                    document.getElementById("month_of_year").value = '';
+                                    document.getElementById("day_of_week").value = '';
                                     document.getElementById("day_of_week_div").style.display = 'none';
                                     document.getElementById("month_of_year_div").style.display = 'none';
                                     break;
                                 case "yearly":
+                                    document.getElementById("date_of_month").value = '';
+                                    document.getElementById("day_of_week").value = '';
                                     document.getElementById("month_of_year_div").style.display = 'block';
                                     document.getElementById("date_of_month_div").style.display = 'none';
                                     document.getElementById("day_of_week_div").style.display = 'none';
                                     break;
                                 case "daily":
+                                    document.getElementById("day_of_week").value = '';
+                                    document.getElementById("date_of_month").value = '';
+                                    document.getElementById("month_of_year").value = '';
                                     document.getElementById("month_of_year_div").style.display = 'none';
                                     document.getElementById("date_of_month_div").style.display = 'none';
                                     document.getElementById("day_of_week_div").style.display = 'none';
@@ -210,24 +221,58 @@ async function addEvent(year,month,day){
         }
     });
 
+    
+    document.getElementById("event_form_button").addEventListener('click',async (event)=>{
+        event.preventDefault();
+        let final_type= "";
+        const title = document.getElementById("event_name").value;
+        const description = document.getElementById("event_description").value;
 
-    document.getElementById("event_form_button").addEventListener('click',(event)=>{
-        const final_type= "";
-        if(document.getElementById("recurrence_type")==="custom"){
-            final_type = document.getElementById("custom_recurrence_type").value;
+        // let start_time = new Date(document.getElementById("event-start-date").value+"T"+document.getElementById("event-start-time").value+":00.000Z").toISOString();
+        // let end_time = new Date(document.getElementById("event-end-date").value+"T"+document.getElementById("event-end-time").value+":00.000Z").toISOString();
+        const startDateInput = document.getElementById("event-start-date");
+        const endDateInput = document.getElementById("event-end-date");
+        const startTimeInput = document.getElementById("event-start-time");
+        const endTimeInput = document.getElementById("event-end-time");
+
+        // Ensure dates are correctly formatted
+        const start_time = `${startDateInput.value} ${startTimeInput.value}:00`;
+        const end_time = `${endDateInput.value} ${endTimeInput.value}:00`;
+
+        // Create Date objects from the formatted strings
+        // const start_time = new Date(startDateString);
+        // const end_time = new Date(endDateString);
+
+        console.log(document.getElementById("custom_recurrence_type").value);
+        if(document.getElementById("recurrence_type").value==="custom"){
+            final_type = `custom ${document.getElementById("custom_recurrence_type").value}`;
         }
         else{
             final_type =document.getElementById("recurrence_type").value;
         }
-    
+        let all_day ="false";
+        if(document.getElementById("all_day").checked){
+            all_day = "true";
+        }
+        let repeat = "false";
+        if(document.getElementById("repeat").checked){
+            repeat="true";
+        }
+        if(!title ||
+            !description ||
+            !start_time
+        ){
+            alert("Fill all fields");
+            return;
+        }
         const package = {
             calendar_id:calendar_id,
             title:title,
             description:description,
-            all_day:document.getElementById("all_day").value,
-            start_time:`${document.getElementById("event-start-date").value} ${document.getElementById("event-start-time").value}`,
-            end_time:`${document.getElementById("event-end-date").value} ${document.getElementById("event-end-time").value}`,
-            repeat:document.getElementById("repeat").value,
+            all_day:all_day,
+            start_time:start_time,
+            end_time:end_time,
+            repeat:repeat,
             recurrence_type:final_type,
             recurrence_interval:document.getElementById("recurrence_interval").value,
             day_of_week :document.getElementById("day_of_week").value,
@@ -235,6 +280,30 @@ async function addEvent(year,month,day){
             month_of_year:document.getElementById("month_of_year").value
         }
         console.log("package: ",package);
+        try{
+            const response = await fetch(`http://localhost:8080/CalendarAPI/event/post?user=${user}`,
+                {
+                    method:"POST",
+                headers:{
+                    "Content-Type":"application/json"
+                },
+                body:JSON.stringify(package),
+                }
+            );
+            const raw = await response.text();
+            const data = JSON.parse(raw);
+            console.log(data.status);
+            console.log(data.message);
+            if (response.ok || data.status === "success") {
+                fetchCalendars();
+                popupOverlay.style.display = 'none';
+            } else {
+                throw new Error(data.message || "Failed. Please try again.");
+            }
+        }
+        catch(error){
+            console.log(error);
+        }
     });
 }
 
@@ -258,7 +327,7 @@ async function editCalendar(id,name,description){
         };
         console.log(calendar);  
         try{
-            const response = await fetch(`http://localhost:8080/CalendarAPI/calendar/put?user=root`,
+            const response = await fetch(`http://localhost:8080/CalendarAPI/calendar/put?user=${user}`,
                 {
                     method:"PUT",
                 headers:{
@@ -272,8 +341,8 @@ async function editCalendar(id,name,description){
             console.log(data.status);
             console.log(data.message);
             if (response.ok || data.status === "success") {
-                fetchCalendars();
-                popupOverlay.style.display = 'none';
+                alert("inserted successfully");
+                event_popupOverlay.style.display = 'none';
             } else {
                 throw new Error(data.message || "Failed. Please try again.");
             }
