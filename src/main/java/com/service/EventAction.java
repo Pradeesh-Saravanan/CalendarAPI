@@ -86,7 +86,14 @@ public class EventAction extends ActionSupport{
 				String start_time = rs.getString("start_time");
 				String end_time = rs.getString("end_time");
 				boolean repeat = rs.getBoolean("repeat");
-				events.add(new Event(request.getParameter("calendar_id"),title,desc,all_day,start_time,end_time,repeat));
+				if(repeat==true) {
+//					System.out.println("repeat true");
+					List<Event> recurringEvents = Recurrence.generateRecurringEvents(request.getParameter("calendar_id"),rs.getString("event_id"),title,desc,all_day,start_time,end_time,repeat);
+					events.addAll(recurringEvents); 
+				}
+				else {
+					events.add(new Event(request.getParameter("calendar_id"),title,desc,all_day,start_time,end_time,repeat));
+				}
 			}
 			Gson gson = new Gson();
 			inputStream = new ByteArrayInputStream(gson.toJson(events).getBytes(StandardCharsets.UTF_8));
@@ -103,6 +110,7 @@ public class EventAction extends ActionSupport{
 		
 	}
 	
+	@SuppressWarnings("resource")
 	public String doPost() throws ServletException, IOException, ClassNotFoundException, SQLException{
 		
 		helper();
@@ -147,52 +155,81 @@ public class EventAction extends ActionSupport{
 					stmt = conn.prepareStatement(query);
 					stmt.setString(1,event.getTitle());
 					ResultSet rs = stmt.executeQuery();
+
 					String event_id="";
 					if(rs.next()) {
 						event_id = rs.getString("event_id");
 					}
 //					event.setRecurrence_type(event.getRecurrence_type().split(" ")[1]);
-					String event_type = event.getRecurrence_type().split(" ")[1];
-					String mod = "",mod_val = "",mod_query="";
-					switch(event_type) {
-					case "daily":
-						break;
-					case "weekly":
-						mod = ",day_of_week";
-						mod_val = event.getDay_of_week();
-						mod_query=",?";
-						break;
-					case "monthly":
-						mod = ",date_of_month";
-						mod_query=",?";
-						mod_val = event.getDate_of_month();
-						break;
-					case "yearly":
-						mod = ",month_of_year";
-						mod_query=",?";
-						mod_val = event.getMonth_of_year();
-						break;
-					default:
-						break;
-					}
-					System.out.println(mod+" "+mod_val);
-					query = "insert into recurrence(event_id,recurrence_type,recurrence_interval"+mod+") values(?,?,?"+mod_query+")";
-					stmt= conn.prepareStatement(query);
+//					if(event.getRecurrence_type().contains("custom")) {
+//						String event_type = event.getRecurrence_type().split(" ")[1];
+//						String mod = "",mod_val = "",mod_query="";
+//						switch(event_type) {
+//						case "daily":
+//							break;
+//						case "weekly":
+//							mod = ",day_of_week";
+//							mod_val = event.getDay_of_week();
+//							mod_query=",?";
+//							break;
+//						case "monthly":
+//							mod = ",date_of_month";
+//							mod_query=",?";
+//							mod_val = event.getDate_of_month();
+//							break;
+//						case "yearly":
+//							mod = ",month_of_year";
+//							mod_query=",?";
+//							mod_val = event.getMonth_of_year();
+//							break;
+//						default:
+//							break;
+//						}
+//						if(event.getRecurrence_interval()=="") {
+//							event.setRecurrence_interval("1");
+//						}
+//						System.out.println(mod+" "+mod_val);
+//						query = "insert into recurrence(event_id,recurrence_type,recurrence_interval"+mod+") values(?,?,?"+mod_query+")";
+//						stmt= conn.prepareStatement(query);
+//						
+//						stmt.setString(1,event_id);
+//						stmt.setString(2,event.getRecurrence_type());
+//						stmt.setString(3,event.getRecurrence_interval());
+//						if(mod!="") {
+//							stmt.setString(4,mod_val);
+//						}
+//						
+//						rows= stmt.executeUpdate();
+//						if(rows<1) {
+//							map.put("message","Unable to insert repeat event");
+//							map.put("status","failed");
+//							inputStream = new ByteArrayInputStream(gson.toJson(map).getBytes(StandardCharsets.UTF_8));
+//							return ERROR;	
+//						}
+//
+//					}
+//					else {
+						
+						query = "insert into recurrence(event_id,recurrence_type,recurrence_interval) values(?,?,?)";
+						stmt= conn.prepareStatement(query);
+						if(event.getRecurrence_interval().length()==0) {
+							event.setRecurrence_interval("1");
+						}
+						System.out.println(event.getRecurrence_interval());
+						stmt.setString(1,event_id);
+						stmt.setString(2,event.getRecurrence_type());
+						stmt.setString(3,event.getRecurrence_interval());
+						
+						rows= stmt.executeUpdate();
+						if(rows<1) {
+							map.put("message","Unable to insert repeat event");
+							map.put("status","failed");
+							inputStream = new ByteArrayInputStream(gson.toJson(map).getBytes(StandardCharsets.UTF_8));
+							return ERROR;
+						}
+
+//					}
 					
-					stmt.setString(1,event_id);
-					stmt.setString(2,event.getRecurrence_type());
-					stmt.setString(3,event.getRecurrence_interval());
-					if(mod!="") {
-						stmt.setString(4,mod_val);
-					}
-					
-					rows= stmt.executeUpdate();
-					if(rows<1) {
-						map.put("message","Unable to insert repeat event");
-						map.put("status","failed");
-						inputStream = new ByteArrayInputStream(gson.toJson(map).getBytes(StandardCharsets.UTF_8));
-						return ERROR;
-					}
 				}
 				map.put("message","Record inserted successfully");
 				map.put("status","success");
@@ -201,6 +238,180 @@ public class EventAction extends ActionSupport{
 				
 		}
 		catch(Exception e) {
+			e.printStackTrace();
+			map.put("message",e.getMessage());
+			map.put("status","failed");
+			inputStream = new ByteArrayInputStream(gson.toJson(map).getBytes(StandardCharsets.UTF_8));
+			return ERROR;
+		}
+	}
+	@SuppressWarnings("resource")
+	public String doPut() throws ServletException, IOException, ClassNotFoundException, SQLException{
+		
+		helper();
+		if("OPTIONS".equals(request.getMethod())) {
+			doOptions(request,response);
+			return NONE;
+		}
+		response.setHeader("Access-Control-Allow-Origin",ORIGIN_STRING);
+		response.setHeader("Access-Control-Allow-Methods","GET,PUT,DELETE,POST,OPTIONS");
+		response.setHeader("Access-Control-Allow-Headers","Content-Type,Authorization");
+		response.setHeader("Access-Control-Allow-Credentials","true");
+		
+		BufferedReader reader = new BufferedReader(new InputStreamReader(request.getInputStream()));
+		StringBuilder sb = new StringBuilder();
+		String line = "";
+		while((line = reader.readLine())!=null) {
+			sb.append(line);
+		}
+		Gson gson = new Gson();
+		Event event = gson.fromJson(sb.toString(),Event.class);
+		try {
+				String query = "update events set calendar_id=?,title=?,description=?,all_day=?,start_time=?,end_time=?,`repeat`=? where title = ?";
+				PreparedStatement stmt = conn.prepareStatement(query);
+				stmt.setString(1,event.getCalendar_id());
+				stmt.setString(2,event.getTitle());
+				stmt.setString(3,event.getDescription());
+				stmt.setBoolean(4,event.isAll_day());
+				stmt.setString(5,event.getStart_time());
+				stmt.setString(6,event.getEnd_time());
+				stmt.setBoolean(7,event.getRepeat());
+				stmt.setString(8,event.getTitle());
+				
+				int rows = stmt.executeUpdate();
+				if(rows<1) {
+					map.put("message","Unable to insert event");
+					map.put("status","failed");
+					inputStream = new ByteArrayInputStream(gson.toJson(map).getBytes(StandardCharsets.UTF_8));
+					return ERROR;
+				}
+				if (event.getRepeat()) {
+					rows = 0;
+					query ="select event_id from events where title = ?";
+					stmt = conn.prepareStatement(query);
+					stmt.setString(1,event.getTitle());
+					ResultSet rs = stmt.executeQuery();
+
+					String event_id="";
+					if(rs.next()) {
+						event_id = rs.getString("event_id");
+					}
+//					event.setRecurrence_type(event.getRecurrence_type().split(" ")[1]);
+//					if(event.getRecurrence_type().contains("custom")) {
+//						String event_type = event.getRecurrence_type().split(" ")[1];
+//						String mod = "",mod_val = "",mod_query="";
+//						switch(event_type) {
+//						case "daily":
+//							break;
+//						case "weekly":
+//							mod = ",day_of_week";
+//							mod_val = event.getDay_of_week();
+//							mod_query=",?";
+//							break;
+//						case "monthly":
+//							mod = ",date_of_month";
+//							mod_query=",?";
+//							mod_val = event.getDate_of_month();
+//							break;
+//						case "yearly":
+//							mod = ",month_of_year";
+//							mod_query=",?";
+//							mod_val = event.getMonth_of_year();
+//							break;
+//						default:
+//							break;
+//						}
+//						if(event.getRecurrence_interval()=="") {
+//							event.setRecurrence_interval("1");
+//						}
+//						System.out.println(mod+" "+mod_val);
+//						query = "insert into recurrence(event_id,recurrence_type,recurrence_interval"+mod+") values(?,?,?"+mod_query+")";
+//						stmt= conn.prepareStatement(query);
+//						
+//						stmt.setString(1,event_id);
+//						stmt.setString(2,event.getRecurrence_type());
+//						stmt.setString(3,event.getRecurrence_interval());
+//						if(mod!="") {
+//							stmt.setString(4,mod_val);
+//						}
+//						
+//						rows= stmt.executeUpdate();
+//						if(rows<1) {
+//							map.put("message","Unable to insert repeat event");
+//							map.put("status","failed");
+//							inputStream = new ByteArrayInputStream(gson.toJson(map).getBytes(StandardCharsets.UTF_8));
+//							return ERROR;	
+//						}
+//
+//					}
+//					else {
+						
+						query = "insert into recurrence(event_id,recurrence_type,recurrence_interval) values(?,?,?)";
+						stmt= conn.prepareStatement(query);
+						if(event.getRecurrence_interval().length()==0) {
+							event.setRecurrence_interval("1");
+						}
+						System.out.println(event.getRecurrence_interval());
+						stmt.setString(1,event_id);
+						stmt.setString(2,event.getRecurrence_type());
+						stmt.setString(3,event.getRecurrence_interval());
+						
+						rows= stmt.executeUpdate();
+						if(rows<1) {
+							map.put("message","Unable to insert repeat event");
+							map.put("status","failed");
+							inputStream = new ByteArrayInputStream(gson.toJson(map).getBytes(StandardCharsets.UTF_8));
+							return ERROR;
+						}
+
+//					}
+					
+				}
+				map.put("message","Record inserted successfully");
+				map.put("status","success");
+				inputStream = new ByteArrayInputStream(gson.toJson(map).getBytes(StandardCharsets.UTF_8));
+				return SUCCESS;
+				
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+			map.put("message",e.getMessage());
+			map.put("status","failed");
+			inputStream = new ByteArrayInputStream(gson.toJson(map).getBytes(StandardCharsets.UTF_8));
+			return ERROR;
+		}
+	}
+	
+	public String doDelete() throws IOException {
+		helper();
+		if("OPTIONS".equals(request.getMethod())) {
+			doOptions(request,response);
+			return NONE;
+		}
+		response.setHeader("Access-Control-Allow-Origin",ORIGIN_STRING);
+		response.setHeader("Access-Control-Allow-Methods","GET,PUT,DELETE,POST,OPTIONS");
+		response.setHeader("Access-Control-Allow-Headers","Content-Type,Authorization");
+		response.setHeader("Access-Control-Allow-Credentials","true");
+		System.out.println("delete is running");
+		String query = "delete from events where title = ?";
+		Gson gson  = new Gson();
+		try(PreparedStatement stmt = conn.prepareStatement(query)){
+			stmt.setString(1,request.getParameter("name"));
+			System.out.println(request.getParameter("name"));
+			int rows = stmt.executeUpdate();
+			if(rows<1) {
+				map.put("message","Unable to delete event");
+				map.put("status","failed");
+				inputStream = new ByteArrayInputStream(gson.toJson(map).getBytes(StandardCharsets.UTF_8));
+				return ERROR;
+			}
+			map.put("message","Event deleted successfully");
+			map.put("status","success");
+			inputStream = new ByteArrayInputStream(gson.toJson(map).getBytes(StandardCharsets.UTF_8));
+			return SUCCESS;
+		}
+		catch(Exception e) {
+			e.printStackTrace();
 			map.put("message",e.getMessage());
 			map.put("status","failed");
 			inputStream = new ByteArrayInputStream(gson.toJson(map).getBytes(StandardCharsets.UTF_8));

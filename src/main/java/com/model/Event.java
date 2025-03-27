@@ -25,7 +25,6 @@ public class Event {
 		this.end_time = end_time;
 		this.repeat = repeat;
 	}
-	
 	public Event(String calendar_id, String title,String description, boolean all_day,String start_time,String end_time,boolean repeat,String recurrence_type,String recurrence_interval,String day_of_week,String date_of_month,String month_of_year) {
 		this.setCalendar_id(calendar_id);
 		this.title = title;

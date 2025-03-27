@@ -8,39 +8,42 @@ const nextButton = document.getElementById("next-year");
 let currentYear = new Date().getFullYear();
 const url = new URLSearchParams(window.location.search);
 const user = url.get("user");
-
+const EVENT_FETCH_URL = `http://localhost:8080/CalendarAPI/event/post?user=${user}`;
+const EVENT_UPDATE_URL = `http://localhost:8080/CalendarAPI/event/put?user=${user}`;
 let calendar_id = 0;
+let first_time = false;
 
 fetchCalendars();
+
 fetchEvents();
 
 function logout(){
     window.location.href="login.html";
 }
 function openRightSidebar() {
-    document.getElementById("myRightSidebar").style.width = "450px"; 
-    // document.getElementById("logoutbtn").style.marginRight = "250px"; 
-    // document.getElementById("rightbtn").style.marginRight = "250px"; 
-    // document.getElementById("view").style.marginRight = "250px"; 
+    document.getElementById("myRightSidebar").style.width = "350px"; 
+    document.getElementById("logoutbtn").style.marginRight = "350px"; 
+    document.getElementById("rightbtn").style.marginRight = "350px"; 
+    document.getElementById("view").style.marginRight = "350px"; 
 }
 function closeRightSidebar() {
     document.getElementById("myRightSidebar").style.width = "0";
-    // document.getElementById("logoutbtn").style.marginRight = "0"; 
-    // document.getElementById("rightbtn").style.marginRight = "0"; 
-    // document.getElementById("view").style.marginRight = "0"; 
+    document.getElementById("logoutbtn").style.marginRight = "0"; 
+    document.getElementById("rightbtn").style.marginRight = "0"; 
+    document.getElementById("view").style.marginRight = "0"; 
 }
 function openSidebar() {
     document.getElementById("mySidebar").style.width = "250px"; 
-    // document.getElementById("view").style.marginLeft = "250px"; 
-    // document.getElementById("menu").style.marginLeft = "250px"; 
-    // document.getElementById("tab").style.marginLeft = "250px"; 
+    document.getElementById("view").style.marginLeft = "250px"; 
+    document.getElementById("menu").style.marginLeft = "250px"; 
+    document.getElementById("tab").style.marginLeft = "250px"; 
   }
   
   function closeSidebar() {
     document.getElementById("mySidebar").style.width = "0";
-    // document.getElementById("view").style.marginLeft= "0";
-    // document.getElementById("tab").style.marginLeft= "0";
-    // document.getElementById("menu").style.marginLeft= "0";
+    document.getElementById("view").style.marginLeft= "0";
+    document.getElementById("tab").style.marginLeft= "0";
+    document.getElementById("menu").style.marginLeft= "0";
   }
 
   const openPopupButton = document.getElementById('create');
@@ -119,7 +122,10 @@ function openSidebar() {
     );
     const raw = await response.text()
     const data = JSON.parse(raw)
-    changeView(data[0].calendar_name,data[0].calendar_id);
+    if(first_time==false){
+        changeView(data[0].calendar_name,data[0].calendar_id);
+        first_time = true;
+    }
     const list = document.getElementById("calendar_list");
     list.innerHTML = ``;
     data.forEach(element=>{
@@ -132,13 +138,11 @@ function openSidebar() {
         console.error("Error fetching posts:", error.API_URL);
     }
 }
-async function addEvent(year_in,month_in,day_in){
+async function addEvent(year_in,month_in,day_in,URL){
     event_popupOverlay.style.display = 'flex';
-
+    console.log("url",URL);
     // let package = new Map();
-    
-    
-    
+
     const year = year_in;
     const day = String(day_in).padStart(2,0);
     const month = String(month_in).padStart(2,0);
@@ -180,41 +184,41 @@ async function addEvent(year_in,month_in,day_in){
 
                         document.getElementById("recurrence_interval").value = 1;
 
-                        document.getElementById("custom_recurrence_type").addEventListener('change',function(event){
-                            const value = document.getElementById("custom_recurrence_type").value;
-                            console.log(value);
-                            switch(value){
-                                case "weekly":
-                                    document.getElementById("day_of_week_div").style.display = 'block';
-                                    document.getElementById("date_of_month_div").style.display = 'none';
-                                    document.getElementById("date_of_month").value = '';
-                                    document.getElementById("month_of_year").value = '';
-                                    document.getElementById("month_of_year_div").style.display = 'none';
-                                    break;
-                                case "monthly":
-                                    document.getElementById("date_of_month_div").style.display = 'block';
-                                    document.getElementById("month_of_year").value = '';
-                                    document.getElementById("day_of_week").value = '';
-                                    document.getElementById("day_of_week_div").style.display = 'none';
-                                    document.getElementById("month_of_year_div").style.display = 'none';
-                                    break;
-                                case "yearly":
-                                    document.getElementById("date_of_month").value = '';
-                                    document.getElementById("day_of_week").value = '';
-                                    document.getElementById("month_of_year_div").style.display = 'block';
-                                    document.getElementById("date_of_month_div").style.display = 'none';
-                                    document.getElementById("day_of_week_div").style.display = 'none';
-                                    break;
-                                case "daily":
-                                    document.getElementById("day_of_week").value = '';
-                                    document.getElementById("date_of_month").value = '';
-                                    document.getElementById("month_of_year").value = '';
-                                    document.getElementById("month_of_year_div").style.display = 'none';
-                                    document.getElementById("date_of_month_div").style.display = 'none';
-                                    document.getElementById("day_of_week_div").style.display = 'none';
-                                    break;
-                            }
-                        });
+                        // document.getElementById("custom_recurrence_type").addEventListener('change',function(event){
+                        //     const value = document.getElementById("custom_recurrence_type").value;
+                        //     console.log(value);
+                        //     switch(value){
+                        //         case "weekly":
+                        //             document.getElementById("day_of_week_div").style.display = 'block';
+                        //             document.getElementById("date_of_month_div").style.display = 'none';
+                        //             document.getElementById("date_of_month").value = '';
+                        //             document.getElementById("month_of_year").value = '';
+                        //             document.getElementById("month_of_year_div").style.display = 'none';
+                        //             break;
+                        //         case "monthly":
+                        //             document.getElementById("date_of_month_div").style.display = 'block';
+                        //             document.getElementById("month_of_year").value = '';
+                        //             document.getElementById("day_of_week").value = '';
+                        //             document.getElementById("day_of_week_div").style.display = 'none';
+                        //             document.getElementById("month_of_year_div").style.display = 'none';
+                        //             break;
+                        //         case "yearly":
+                        //             document.getElementById("date_of_month").value = '';
+                        //             document.getElementById("day_of_week").value = '';
+                        //             document.getElementById("month_of_year_div").style.display = 'block';
+                        //             document.getElementById("date_of_month_div").style.display = 'none';
+                        //             document.getElementById("day_of_week_div").style.display = 'none';
+                        //             break;
+                        //         case "daily":
+                        //             document.getElementById("day_of_week").value = '';
+                        //             document.getElementById("date_of_month").value = '';
+                        //             document.getElementById("month_of_year").value = '';
+                        //             document.getElementById("month_of_year_div").style.display = 'none';
+                        //             document.getElementById("date_of_month_div").style.display = 'none';
+                        //             document.getElementById("day_of_week_div").style.display = 'none';
+                        //             break;
+                        //     }
+                        // });
                     }
                     else{
                         document.getElementById("custom_recurrence_type_div").style.display = 'none';
@@ -293,7 +297,7 @@ async function addEvent(year_in,month_in,day_in){
         }
         console.log("package: ",package);
         try{
-            const response = await fetch(`http://localhost:8080/CalendarAPI/event/post?user=${user}`,
+            const response = await fetch(URL,
                 {
                     method:"POST",
                 headers:{
@@ -307,9 +311,24 @@ async function addEvent(year_in,month_in,day_in){
             console.log(data.status);
             console.log(data.message);
             if (response.ok || data.status === "success") {
+                document.getElementById("event_name").value= '';
+                document.getElementById("event_description").value= '';
+                document.getElementById("event-start-date").value= '';
+                document.getElementById("event-end-date").value= '';
+                document.getElementById("event-start-time").value= '';
+                document.getElementById("event-end-time").value= '';
+                document.getElementById("repeat").checked= false;
+                document.getElementById("all_day").checked= false;
+                document.getElementById("custom_recurrence_type").value= 'daily';
+                document.getElementById("recurrence").style.display = 'none';
+                document.getElementById("custom_recurrence_type_div").style.display = 'none';
+                document.getElementById("recurrence_interval_div").style.display = 'none';
+                document.getElementById("date_of_month").style.display = 'none';
+                document.getElementById("month_of_year").style.display = 'none';
+                document.getElementById("day_of_week").style.display = 'none';
+                event_popupOverlay.style.display = 'none';
                 fetchCalendars();
                 fetchEvents(); // Add this line
-                popupOverlay.style.display = 'none';
             } else {
                 throw new Error(data.message || "Failed. Please try again.");
             }
@@ -378,7 +397,8 @@ async function fetchEvents() {
         list.innerHTML = ``;
         data.forEach(element=>{
             const row = document.createElement("div");
-            row.innerHTML=`<button  class="rightpanelBtn">${element.title}</button><br><button>${element.start_time}</button>`;
+            row.innerHTML=`<button  class="rightpanelBtn" onClick="editEvent('${element.title}','${element.start_time}')">${element.title}</button><br><button>${element.start_time}</button>
+                            <button onClick = "deleteEvent('${element.title}')">X</button>`;
             list.appendChild(row);
         });
         // Reset the events storage
@@ -402,7 +422,153 @@ async function fetchEvents() {
         console.error("Error fetching events:", error);
     }
 }
+async function editEvent(title,start_time){
+    const startDate = new Date(start_time);
+    const dateKey = `${startDate.getFullYear()}-${String(startDate.getMonth() + 1).padStart(2, '0')}-${String(startDate.getDate()).padStart(2, '0')}`;
+    
 
+    const event = eventsByDate[dateKey][0];
+
+    const endDate = new Date(event.end_time);
+    const endDateTime = `${endDate.getFullYear()}-${String(endDate.getMonth() + 1).padStart(2, '0')}-${String(endDate.getDate()).padStart(2, '0')}`;
+
+    const startTime = `${startDate.getHours()}:${startDate.getMinutes()}`
+    const endTime = `${endDate.getHours()}:${endDate.getMinutes()}`
+    console.log(event);
+ 
+    document.getElementById("event_name").value= title;
+    document.getElementById("event_description").value= event.description;
+    document.getElementById("event-start-date").value= dateKey;
+    document.getElementById("event-end-date").value= endDateTime;
+    document.getElementById("event-start-time").value= startTime;
+    document.getElementById("event-end-time").value= endTime;
+    document.getElementById("repeat").checked= event.repeat;
+    document.getElementById("all_day").checked= event.all_day;
+    document.getElementById("custom_recurrence_type").value= event.recurrence_type;
+
+    event_popupOverlay.style.display = 'flex';
+    document.getElementById("event_form_button").innerText = "Edit";
+    document.getElementById("event_form_button").addEventListener('click',async function(){
+        // addEvent(startDate.getFullYear(),startDate.getMonth(),startDate.getDate(),EVENT_UPDATE_URL);
+        let final_type= "";
+        const title = document.getElementById("event_name").value;
+        const description = document.getElementById("event_description").value;
+
+        // let start_time = new Date(document.getElementById("event-start-date").value+"T"+document.getElementById("event-start-time").value+":00.000Z").toISOString();
+        // let end_time = new Date(document.getElementById("event-end-date").value+"T"+document.getElementById("event-end-time").value+":00.000Z").toISOString();
+        const startDateInput = document.getElementById("event-start-date");
+        const endDateInput = document.getElementById("event-end-date");
+        const startTimeInput = document.getElementById("event-start-time");
+        const endTimeInput = document.getElementById("event-end-time");
+
+        // Ensure dates are correctly formatted
+        const start_time = `${startDateInput.value} ${startTimeInput.value}:00`;
+        const end_time = `${endDateInput.value} ${endTimeInput.value}:00`;
+
+        // Create Date objects from the formatted strings
+        // const start_time = new Date(startDateString);
+        // const end_time = new Date(endDateString);
+
+        console.log(document.getElementById("custom_recurrence_type").value);
+        if(document.getElementById("recurrence_type").value==="custom"){
+            final_type = `custom ${document.getElementById("custom_recurrence_type").value}`;
+        }
+        else{
+            final_type =document.getElementById("recurrence_type").value;
+        }
+        let all_day ="false";
+        if(document.getElementById("all_day").checked){
+            all_day = "true";
+        }
+        let repeat = "false";
+        if(document.getElementById("repeat").checked){
+            repeat="true";
+        }
+        if(!title ||
+            !description ||
+            !start_time
+        ){
+            alert("Fill all fields");
+            return;
+        }
+        const package = {
+            calendar_id:calendar_id,
+            title:title,
+            description:description,
+            all_day:all_day,
+            start_time:start_time,
+            end_time:end_time,
+            repeat:repeat,
+            recurrence_type:final_type,
+            recurrence_interval:document.getElementById("recurrence_interval").value,
+            day_of_week :document.getElementById("day_of_week").value,
+            date_of_month:document.getElementById("date_of_month").value,
+            month_of_year:document.getElementById("month_of_year").value
+        }
+        console.log("package: ",package);
+        try{
+            const response = await fetch(EVENT_UPDATE_URL,
+                {
+                    method:"POST",
+                headers:{
+                    "Content-Type":"application/json"
+                },
+                body:JSON.stringify(package),
+                }
+            );
+            const raw = await response.text();
+            const data = JSON.parse(raw);
+            console.log(data.status);
+            console.log(data.message);
+            if (response.ok || data.status === "success") {
+                document.getElementById("event_name").value= '';
+                document.getElementById("event_description").value= '';
+                document.getElementById("event-start-date").value= '';
+                document.getElementById("event-end-date").value= '';
+                document.getElementById("event-start-time").value= '';
+                document.getElementById("event-end-time").value= '';
+                document.getElementById("repeat").checked= false;
+                document.getElementById("all_day").checked= false;
+                document.getElementById("custom_recurrence_type").value= 'daily';
+                document.getElementById("recurrence").style.display = 'none';
+                document.getElementById("custom_recurrence_type_div").style.display = 'none';
+                document.getElementById("recurrence_interval_div").style.display = 'none';
+                document.getElementById("date_of_month").style.display = 'none';
+                document.getElementById("month_of_year").style.display = 'none';
+                document.getElementById("day_of_week").style.display = 'none';
+                event_popupOverlay.style.display = 'none';
+                fetchCalendars();
+                fetchEvents(); // Add this line
+            } else {
+                throw new Error(data.message || "Failed. Please try again.");
+            }
+        }
+        catch(error){
+            console.log(error);
+        }
+    });
+    
+}
+
+async function deleteEvent(title){
+    try{
+        const response = await fetch(`http://localhost:8080/CalendarAPI/event/delete?user=${user}&name=${title}`);
+        const raw = await response.text();
+        const data = JSON.parse(raw);
+        console.log(data.status);
+        console.log(data.message);
+        if (data.status === "success") {
+            alert("deleted successfully");
+            window.location.reload();
+            // fetchEvents();
+        } else {
+            throw new Error(data.message || "Failed. Please try again.");
+        }
+    }
+    catch(error){
+        console.log(error);
+    }
+}
 function render(year) {
     currentYearElement.textContent = year;
     calendarMonths.innerHTML = "";
@@ -437,7 +603,7 @@ function render(year) {
         for (let day = 1; day <= daysInMonth; day++) {
             const dayElement = document.createElement('div');
             dayElement.onclick = function() {
-                addEvent(year, month + 1, day);
+                addEvent(year, month + 1, day,EVENT_FETCH_URL);
             };
             dayElement.textContent = day;
             
@@ -479,11 +645,15 @@ function render(year) {
 prevButton.addEventListener('click',()=>{
     currentYear--;
     render(currentYear);
+    fetchCalendars();
+    fetchEvents();
 });
 
 nextButton.addEventListener('click',()=>{
     currentYear++;
     render(currentYear);
+    fetchCalendars();
+    fetchEvents();
 })
 
 render(currentYear);

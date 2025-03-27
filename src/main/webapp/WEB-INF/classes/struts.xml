@@ -71,6 +71,16 @@
         				<param name = 'inputName'>inputStream</param>
         			</result>
         		</action>
+        		<action name="put" method="doPut" class='com.service.EventAction'>
+        			<result name = "success" type = 'stream'>
+        				<param name = "contentType">application/json</param>
+        				<param name = "inputName">inputStream</param>
+        			</result>
+        			<result name = "error" type='stream'>
+        				<param name = "contentType">application/json</param>
+        				<param name = 'inputName'>inputStream</param>
+        			</result>
+        		</action>
         		
         		<action name = "get" method="doGet" class = "com.service.EventAction">
         			<result name = "success" type = "stream">
@@ -78,6 +88,17 @@
         				<param name="inputName">inputStream</param>
         			</result>
 				<result name = "error" type = "stream">
+        				<param name = "contentType">application/json</param>
+        				<param name = "inputName">inputStream</param>
+        			</result>
+        		</action>
+        		
+        		<action name = "delete" method = 'doDelete' class = "com.service.EventAction">
+        			<result name = "success" type = "stream">
+        				<param name = "contentType">application/json</param>
+        				<param name = "inputName">inputStream</param> 
+        			</result>
+        			<result name = "error" type="stream">
         				<param name = "contentType">application/json</param>
         				<param name = "inputName">inputStream</param>
         			</result>

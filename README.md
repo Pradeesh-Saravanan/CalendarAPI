@@ -30,3 +30,10 @@ Struts based Calendar API
 ## 25/03/2025
 
 - Moved the request part to frontend for event create operation
+
+## 27/03/2025
+
+- Worked on the event operations 
+- Populated recurrent events in the calendar till end of year 
+- Completed full create event operation and delete operation
+- Managed to store small database for the case of recurrent events

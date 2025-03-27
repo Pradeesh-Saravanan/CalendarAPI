@@ -15,6 +15,7 @@ body{
     right: 50px;
     font-size: 20px;
     border:none;
+    transition :0.5s;
     background:transparent;
     border-radius: 0.5rem;
     cursor: pointer;
@@ -99,6 +100,7 @@ body{
 
   .rightpanelBtn{
     border:none; background-color:transparent; font-size:25px; color:white;
+    transition:0.5s;
   }
   
   #tab{
@@ -112,6 +114,7 @@ body{
     padding: 16px;
   }
   .rightbtn{
+    transition: 0.5s;
     position: absolute;
     top: 120px;
     right: 10px;
@@ -145,9 +148,47 @@ body{
       right: 10px;
     }
   }
+  @media (max-width: 768px) {
+    .month {
+      margin: 5px;
+    }
+    .weekdays div {
+      font-size: 12px;
+    }
+    .days div {
+      padding: 5px;
+      font-size: 12px;
+    }
+  }
+  /* Adjust event display for smaller screens */
+@media (max-width: 480px) {
+    .day-events {
+      display: flex;
+      flex-direction: column;
+    }
+    .event-dot {
+      margin-bottom: 2px;
+    }
+  }  
   
+  @media (max-width: 480px) {
+    .month {
+      margin: 2px;
+    }
+    .weekdays div {
+      font-size: 10px;
+    }
+    .days div {
+      padding: 2px;
+      font-size: 10px;
+    }
+  }
+
 
 .yearly-calendar{
+
+ 
+
     /* background: #BAD8B6; */
     background: #D4E7C5;
     border-radius: 10px;
