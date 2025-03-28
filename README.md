@@ -37,3 +37,10 @@ Struts based Calendar API
 - Populated recurrent events in the calendar till end of year 
 - Completed full create event operation and delete operation
 - Managed to store small database for the case of recurrent events
+
+
+# 28/03/2025 
+
+- Restruturing the database to suit recurring events in scheduling appointments in FSM
+- Created class for schedule 
+- Started with post operation for schedule action code

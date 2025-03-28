@@ -60,6 +60,19 @@
         		</action>
         	</package>
         	
+        	<package name = "schedule-package" namespace="/schedule" extends="struts-default">
+        		<action name="post" method = "doPost" class="com.service.ScheduleAction">
+        			<result name = "success" type="stream">
+        				<param name = "contentType">application/json</param>
+        				<param name = "inputName">responseData</param>
+        			</result>
+        			<result name = "error" type="stream">
+        				<param name = "contentType">application/json</param>
+        				<param name = "inputName">responseData</param>
+        			</result>
+        		</action>
+        	</package>
+        	
         	<package name= "event-package" namespace="/event" extends="struts-default">
         		<action name="post" method="doPost" class='com.service.EventAction'>
         			<result name = "success" type = 'stream'>
