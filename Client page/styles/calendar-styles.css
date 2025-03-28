@@ -275,8 +275,8 @@ button {
     height: 100%;
     background-color: rgba(0, 0, 0, 0.7) Semi-transparent #A5B68D;
     display: none; 
-    justify-content: center; 
-    align-items: center; 
+    /* justify-content: center;  */
+    /* align-items: center;  */
     z-index: 1000; 
     box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 );
     backdrop-filter: blur( 3.5px );
@@ -310,7 +310,14 @@ button {
     border-radius: 10px;
     position: relative; 
     color: #000;
-    transition: 0.5s;
+    /* transition: 0.5s; */
+
+    height: 100%;
+    /* width: 0; Initially hidden */
+    position: fixed;
+    z-index: 1;
+    top: 0;
+    right: 0;
     /* width: 250px;  */
 }
 
@@ -324,11 +331,21 @@ button {
     margin-left: 20px;
     padding: 10px;
 }
+.popupTextBoxFirst{
+  background-color: white;
+  color: black;
+  border: 2px;
+  font-size: medium;
+  border-radius: 5px;
+  margin: 20px;
+  margin-left: 55px;
+  padding: 10px;
+}
 .close {
     position: absolute;
     top: 10px;
     right: 10px;
-    font-size: 20px;
+    font-size: 25px;
     border:none;
     background:transparent;
     border-radius: 0.5rem;

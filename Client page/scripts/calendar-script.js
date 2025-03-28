@@ -53,6 +53,8 @@ function openSidebar() {
   const event_popupOverlay = document.getElementById('event_overlay');
   const buttonText = document.getElementById("addbutton");
 
+
+
   openPopupButton.addEventListener('click', (event) => {
       popupOverlay.style.display = 'flex';
   });
@@ -178,54 +180,160 @@ async function addEvent(year_in,month_in,day_in,URL){
           
                 selectElement.addEventListener('change', function(event) {
                     // recurrence_type_value = selectElement.value;
-                    if(selectElement.value==="custom"){
-                        document.getElementById("custom_recurrence_type_div").style.display = 'block';
-                        document.getElementById("recurrence_interval_div").style.display = 'block';
+                    // if(selectElement.value==="custom"){
+                    //     document.getElementById("custom_recurrence_type_div").style.display = 'block';
+                    //     document.getElementById("recurrence_interval_div").style.display = 'block';
 
-                        document.getElementById("recurrence_interval").value = 1;
+                    //     document.getElementById("recurrence_interval").value = 1;
 
-                        // document.getElementById("custom_recurrence_type").addEventListener('change',function(event){
-                        //     const value = document.getElementById("custom_recurrence_type").value;
-                        //     console.log(value);
-                        //     switch(value){
-                        //         case "weekly":
-                        //             document.getElementById("day_of_week_div").style.display = 'block';
-                        //             document.getElementById("date_of_month_div").style.display = 'none';
-                        //             document.getElementById("date_of_month").value = '';
-                        //             document.getElementById("month_of_year").value = '';
-                        //             document.getElementById("month_of_year_div").style.display = 'none';
-                        //             break;
-                        //         case "monthly":
-                        //             document.getElementById("date_of_month_div").style.display = 'block';
-                        //             document.getElementById("month_of_year").value = '';
-                        //             document.getElementById("day_of_week").value = '';
-                        //             document.getElementById("day_of_week_div").style.display = 'none';
-                        //             document.getElementById("month_of_year_div").style.display = 'none';
-                        //             break;
-                        //         case "yearly":
-                        //             document.getElementById("date_of_month").value = '';
-                        //             document.getElementById("day_of_week").value = '';
-                        //             document.getElementById("month_of_year_div").style.display = 'block';
-                        //             document.getElementById("date_of_month_div").style.display = 'none';
-                        //             document.getElementById("day_of_week_div").style.display = 'none';
-                        //             break;
-                        //         case "daily":
-                        //             document.getElementById("day_of_week").value = '';
-                        //             document.getElementById("date_of_month").value = '';
-                        //             document.getElementById("month_of_year").value = '';
-                        //             document.getElementById("month_of_year_div").style.display = 'none';
-                        //             document.getElementById("date_of_month_div").style.display = 'none';
-                        //             document.getElementById("day_of_week_div").style.display = 'none';
-                        //             break;
-                        //     }
-                        // });
+                    //     // document.getElementById("custom_recurrence_type").addEventListener('change',function(event){
+                    //     //     const value = document.getElementById("custom_recurrence_type").value;
+                    //     //     console.log(value);
+                    //     //     switch(value){
+                    //     //         case "weekly":
+                    //     //             document.getElementById("day_of_week_div").style.display = 'block';
+                    //     //             document.getElementById("date_of_month_div").style.display = 'none';
+                    //     //             document.getElementById("date_of_month").value = '';
+                    //     //             document.getElementById("month_of_year").value = '';
+                    //     //             document.getElementById("month_of_year_div").style.display = 'none';
+                    //     //             break;
+                    //     //         case "monthly":
+                    //     //             document.getElementById("date_of_month_div").style.display = 'block';
+                    //     //             document.getElementById("month_of_year").value = '';
+                    //     //             document.getElementById("day_of_week").value = '';
+                    //     //             document.getElementById("day_of_week_div").style.display = 'none';
+                    //     //             document.getElementById("month_of_year_div").style.display = 'none';
+                    //     //             break;
+                    //     //         case "yearly":
+                    //     //             document.getElementById("date_of_month").value = '';
+                    //     //             document.getElementById("day_of_week").value = '';
+                    //     //             document.getElementById("month_of_year_div").style.display = 'block';
+                    //     //             document.getElementById("date_of_month_div").style.display = 'none';
+                    //     //             document.getElementById("day_of_week_div").style.display = 'none';
+                    //     //             break;
+                    //     //         case "daily":
+                    //     //             document.getElementById("day_of_week").value = '';
+                    //     //             document.getElementById("date_of_month").value = '';
+                    //     //             document.getElementById("month_of_year").value = '';
+                    //     //             document.getElementById("month_of_year_div").style.display = 'none';
+                    //     //             document.getElementById("date_of_month_div").style.display = 'none';
+                    //     //             document.getElementById("day_of_week_div").style.display = 'none';
+                    //     //             break;
+                    //     //     }
+                    //     // });
+                    // }
+                    // else{
+                    //     document.getElementById("custom_recurrence_type_div").style.display = 'none';
+                    //     document.getElementById("recurrence_interval_div").style.display = 'none';
+                    // }
+                    if(selectElement.value ==="daily"){
+                        const parent = document.getElementById("recurrence");
+
+                        const select = document.createElement("select");
+                        select.id = "recurrence_type_custom";
+                        select.classList.add("popupTextBoxFirst");
+
+                        let option = document.createElement("option");
+                        
+                        const defaultString = "Every Day";
+                        option.text = defaultString;
+                        option.value = 1;
+                        select.appendChild(option);
+                        
+                        for(let i=2;i<7;i++){
+                            let option = document.createElement("option");
+                            option.text = "Every "+i+" days";
+                            option.value = i;
+                            select.appendChild(option);
+                        }
+
+                        let optionFinal = document.createElement("option");
+                        optionFinal.text = "Custom";
+                        optionFinal.value = "custom";
+                        select.appendChild(optionFinal);
+
+                        select.addEventListener("change",()=>{
+                            if(document.getElementById("recurrence_type").value==="daily" && select.value==="custom"){
+                                const parent = document.getElementById("recurrence");
+
+                                const labelOn = document.createElement("label");
+                                labelOn.textContent = "Every";
+                                parent.appendChild(document.createElement("br"));
+                                parent.appendChild(labelOn);
+
+                                const customDay = document.createElement("input");
+                                customDay.type = "number";
+                                customDay.classList.add("popupTextBox");
+                                customDay.id = "recurrence_type_custom_day";
+                                // option.appendChild(editable);
+                                const labelEnd = document.createElement("label");
+                                labelEnd.textContent = "days";
+                                
+                                parent.appendChild(customDay);
+                                parent.appendChild(labelEnd);
+                            }
+                        });
+                        console.log(select);
+                        parent.appendChild(select);
+
                     }
-                    else{
-                        document.getElementById("custom_recurrence_type_div").style.display = 'none';
-                        document.getElementById("recurrence_interval_div").style.display = 'none';
+                    else if(selectElement.value ==="weekly"){
+                        const parent = document.getElementById("recurrence");
+
+                        const select = document.createElement("select");
+                        select.id = "recurence_type_custom";
+                        select.classList.add("popupTextBoxFirst");
+
+                        let option = document.createElement("option");
+
+                        
+                        const defaultString = "Every Week";
+                        option.text = defaultString;
+                        option.value = 1;
+                        select.appendChild(option);
+                        
+                        for(let i=2;i<7;i++){
+                            let option = document.createElement("option");
+                            option.text = "Every "+i+" weeks";
+                            option.value = i;
+                            select.appendChild(option);
+                        }
+
+                        let optionFinal = document.createElement("option");
+                        optionFinal.text = "Custom";
+                        optionFinal.value = "custom";
+                        select.appendChild(optionFinal);
+
+                        parent.appendChild(select);
+
+                        
+                        const selectDay = document.createElement("select");
+                        selectDay.id = "recurence_type_custom_day";
+                        selectDay.classList.add("popupTextBoxFirst");
+                        
+                        const labelOn = document.createElement("label");
+                        labelOn.textContent = "On";
+                        parent.appendChild(labelOn);
+
+                        let i=0;
+                        ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].forEach(element=>{
+                            const option = document.createElement("option");
+                            option.text = element;
+                            option.value = i;
+                            selectDay.appendChild(option);
+                            i++;
+                        });
+
+                        parent.appendChild(selectDay);
+                        // console.log(parent);
                     }
 
                 });
+                console.log(document.getElementById("recurrence_type_custom"));
+                // showCustomOption();
+            //     document.addEventListener("DOMContentLoaded",()=>{
+                    
+            // });
         }else{
             document.getElementById("recurrence_type").value = "daily";
             document.getElementById("month_of_year_div").style.display = 'none';
@@ -236,6 +344,7 @@ async function addEvent(year_in,month_in,day_in,URL){
             document.getElementById("recurrence").style.display = 'none';
         }
     });
+
 
     
     document.getElementById("event_form_button").addEventListener('click',async (event)=>{
@@ -339,6 +448,22 @@ async function addEvent(year_in,month_in,day_in,URL){
     });
 }
 
+function showCustomOption(){
+    document.getElementById("recurrence_type_custom").addEventListener("change",()=>{
+        if(document.getElementById("recurrence_type").value==="daily" && document.getElementById("recurrence_type_custom")==="custom"){
+            const parent = document.getElementById("recurrece_type_custom");
+            parent.removeChild(parent.lastElementChild);
+
+            const option = document.createElement("option");
+            
+            const editable = document.createElement("input");
+
+            option.appendChild(editable);
+
+            parent.appendChild(option);
+        }
+    });
+}
 async function editCalendar(id,name,description){
 
     console.log(id,name,description);
