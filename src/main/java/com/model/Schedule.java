@@ -1,7 +1,7 @@
 package com.model;
 
 public class Schedule {
-	private int calendar_id;
+	private int calendarId;
 	private String title;
 	private String description;
 	private boolean allDay;
@@ -9,16 +9,19 @@ public class Schedule {
 	private String endTime;
 	private boolean isRecurring;
 	private String frequency;
-	private int repeatInterval;
+	private double repeatInterval;
 	private String day;
 	private String date;
 	private String week;
 	private String month;
 	private int offset;
 	
+	public Schedule(int calendarId) {
+		this.calendarId = calendarId;
+	}
 	
-	public Schedule(int calendar_id,String title,String description,boolean allDay,String startTime,String endTime,boolean isRecurring,String frequency,int repeatInterval,String day,String date,String week,String month,int offset) {
-		this.calendar_id = calendar_id;
+	public Schedule(int calendar_id,String title,String description,boolean allDay,String startTime,String endTime,boolean isRecurring,String frequency,double repeatInterval,String day,String date,String week,String month,int offset) {
+		this.calendarId = calendar_id;
 		this.title = title;
 		this.description = description;
 		this.allDay = allDay;
@@ -72,10 +75,10 @@ public class Schedule {
 	public void setFrequency(String frequency) {
 		this.frequency = frequency;
 	}
-	public int getRepeatInterval() {
+	public double getRepeatInterval() {
 		return repeatInterval;
 	}
-	public void setRepeatInterval(int repeatInterval) {
+	public void setRepeatInterval(double repeatInterval) {
 		this.repeatInterval = repeatInterval;
 	}
 	public String getDay() {
@@ -108,28 +111,16 @@ public class Schedule {
 	public void setOffset(int offset) {
 		this.offset = offset;
 	}
-
-
-
 	public String getEndTime() {
 		return endTime;
 	}
-
-
-
 	public void setEndTime(String endTime) {
 		this.endTime = endTime;
 	}
-
-
-
-	public int getCalendar_id() {
-		return calendar_id;
+	public int getCalendarId() {
+		return calendarId;
 	}
-
-
-
-	public void setCalendar_id(int calendar_id) {
-		this.calendar_id = calendar_id;
+	public void setCalendarId(int calendar_id) {
+		this.calendarId = calendar_id;
 	}
 }

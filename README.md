@@ -44,3 +44,15 @@ Struts based Calendar API
 - Restruturing the database to suit recurring events in scheduling appointments in FSM
 - Created class for schedule 
 - Started with post operation for schedule action code
+
+
+
+# 31/03/2025
+
+- Completed schedule post operations for all custom types 
+- Populated for daily, monthly, weekly, yearly recurring schedules
+- Fine tuned variable in schedule class for easy convention
+- Verified backend for the population criteria and post operations
+
+
+Note : To solve the inputName error thrown by struts xml file use non static getter and setter for inputstream variable in action 

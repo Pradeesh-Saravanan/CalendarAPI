@@ -360,6 +360,10 @@ button {
     display: none;
     margin-left: 40px;
 }
+#custom_recurrence_type_daily_div{
+  display: none;
+  margin-left: 40px;
+}
 #day_of_week_div{
     display: none;
     margin-left: 40px;

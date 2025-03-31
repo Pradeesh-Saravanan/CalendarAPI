@@ -81,25 +81,28 @@
             <label for="repeat">Repeat</label><br>
 
             <div id = "recurrence">
-                <label for="recurrence_type">Recurrence Type</label>
-                <select name="type" id="recurrence_type" class="popupTextBox">
-                    <option value="none" selected disabled hidden></option>
-                    <option value="daily">Daily</option>
-                    <option value="weekly">Weekly</option>
-                    <option value="monthly">Monthly</option>
-                    <option value="yearly">Yearly</option>
-                    <!-- <option value="custom">Custom</option> -->
-                </select> <br>
                 
             </div>
 
             <div id = "custom_recurrence_type_div">
                 <label for="custom_recurrence_type">Frequency</label>
                 <select name="custom_type" id="custom_recurrence_type" class="popupTextBox">
+                    <option value="" selected></option>
                     <option value="daily">Daily</option>
                     <option value="weekly">Weekly</option>
                     <option value="monthly">Monthly</option>
                     <option value="yearly">Yearly</option>
+                </select> 
+            </div>
+
+            <div id = "custom_recurrence_type_daily_div">
+                <label for="custom_recurrence_type_daily">Frequency</label>
+                <select name="custom_type" id="custom_recurrence_type_daily" class="popupTextBox">
+                    <option value="1">Every day</option>
+                    <option value="2">Every 2 days</option>
+                    <option value="3">Every 3 days</option>
+                    <option value="4">Every 4 days</option>
+                    <option value="5">Custom</option>
                 </select> 
             </div>
 
