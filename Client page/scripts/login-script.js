@@ -2,19 +2,22 @@ const loginForm = document.getElementById("login-form");
         const errorMessage = document.getElementById("error-message");
         const submitButton = document.getElementById("submit-button");
 
-        // onload();
+        onload();
         async function onload() {
+            const token = localStorage.getItem('token');
             try {
-                const response = await fetch("http://localhost:8080/StorageAPI_Struts/login/get", {
+                const response = await fetch("http://localhost:8080/CalendarAPI/secured/login/get", {
                     method: "GET",
-                    credentials: "include", 
+                    headers:{
+                        "Authorization":`Bearer ${token}`,
+                    } 
                 });
                 const raw = await response.text();
                 const data = JSON.parse(raw);
                 console.log(data.status);
                 if (response.ok || data.status === "success") {
-                    console.log(data.user);
-                    window.location.href = `dashboard.html?user=${data.user}`;
+                    // console.log(data.user);
+                    window.location.href = `calendar.html?user=${data.user}`;
                 }
             } catch (error) {
                 // showError(error.message);
@@ -54,7 +57,13 @@ const loginForm = document.getElementById("login-form");
                 if (response.ok || data.status === "success") {
                     // console.log(user);
                     // alert(data.token);
-                    window.location.href = `calendar.html?user=${user}`;
+                    if(data.token){
+                        localStorage.setItem("token",data.token);
+                        window.location.href = `calendar.html?user=${user}`;
+                    }
+                    else{
+                        console.log("empty token")
+                    }
                 } else {
                     throw new Error(data.message || "Login failed. Please try again.");
                 }

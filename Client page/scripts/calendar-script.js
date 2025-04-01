@@ -7,6 +7,7 @@ const nextButton = document.getElementById("next-year");
 
 let currentYear = new Date().getFullYear();
 const url = new URLSearchParams(window.location.search);
+const token = localStorage.getItem('token');
 const user = url.get("user");
 const EVENT_FETCH_URL = `http://localhost:8080/CalendarAPI/event/post?user=${user}`;
 const EVENT_UPDATE_URL = `http://localhost:8080/CalendarAPI/event/put?user=${user}`;
@@ -18,6 +19,7 @@ fetchCalendars();
 fetchEvents();
 
 function logout(){
+    localStorage.removeItem("token");
     window.location.href="login.html";
 }
 function openRightSidebar() {
@@ -82,6 +84,8 @@ function openSidebar() {
     fetchEvents();
   }
 
+
+
   async function addCalendar(){
 
     if(!document.getElementById("calendar_name").value || !document.getElementById("description").value){
@@ -93,7 +97,7 @@ function openSidebar() {
     };
     console.log(calendar);  
     try{
-        const response = await fetch(`http://localhost:8080/CalendarAPI/calendar/post?user=root`,
+        const response = await fetch(`http://localhost:8080/CalendarAPI/secured/calendar/post?user=${user}`,
             {
                 method:"POST",
                headers:{
@@ -102,6 +106,11 @@ function openSidebar() {
                body:JSON.stringify(calendar)
             }
         );
+        console.log(response.status);
+        if(!response.status===401){
+            alert("Unauthorized");
+            window.location.href="login.html";
+        }
         const raw = await response.text();
         const data = JSON.parse(raw);
         console.log(data.status);
@@ -118,10 +127,23 @@ function openSidebar() {
   
   async function fetchCalendars() {
     // alert("authenticated");
+    if (!token) {
+        console.log("No token found");
+        window.location.href="login.html";
+        return;
+    }
     try {
-        const response = await fetch(`http://localhost:8080/CalendarAPI/calendar/get?user=${user}`,
-
-    );
+        const response = await fetch(`http://localhost:8080/CalendarAPI/secured/calendar/get?user=${user}`,
+            {
+                method:"GET",
+                headers:{
+                    'Authorization':`Bearer ${token}`,
+                }
+            }
+        );
+        if(!response.status===401 || !response.ok){
+        window.location.href="login.html";
+        }
     const raw = await response.text()
     const data = JSON.parse(raw)
     if(first_time==false){
@@ -137,7 +159,171 @@ function openSidebar() {
         list.appendChild(row);
     });
     } catch (error) {
-        console.error("Error fetching posts:", error.API_URL);
+        window.location.href="login.html";
+        console.error("Error fetching posts:", error);
+    }
+}
+
+const dateSet = new Set();
+
+function createMonthView(id){
+    const parentDiv = document.createElement("div");
+
+    const monthElement = document.createElement("div");
+    const viewButton = document.createElement("input");
+    viewButton.setAttribute("type","checkbox");
+    viewButton.id = "monthViewButton";
+    monthElement.classList.add("monthView");
+    parentDiv.appendChild(viewButton);
+    monthElement.classList.add("monthView");
+    const daysElement = document.createElement("div");
+    daysElement.classList.add("days");
+    for(let day=1;day<=31;day++){
+        const dayElement = document.createElement("div");
+        // dayElement.onclick= function(){};
+        dayElement.textContent =day;
+        dayElement.addEventListener("click",()=>{
+
+            dayElement.style.backgroundColor = dayElement.style.backgroundColor==="rgb(196, 217, 255)" ? "transparent" : "rgb(196, 217, 255)";
+            if(dateSet.has(day+",")){
+                dateSet.delete(day+",");
+            }
+            else{
+                dateSet.add(day+",");
+                if(dateSet.size>5){
+                    alert("only 5 dates can be included");
+                    dateSet.delete(day+",");
+                    dayElement.style.backgroundColor = "transparent";
+                }
+            }
+            if(dateSet.size==0){
+                document.getElementById(id).textContent = "Select Day(s) "+id;
+            }
+            else{
+                displayDate(id);
+            }
+            console.log(dateSet);
+            
+        });
+        daysElement.appendChild(dayElement);
+    }
+    monthElement.appendChild(daysElement);
+    viewButton.addEventListener("click",()=>{
+        // weekViewButton.checked = false;
+        if(viewButton.checked==true){
+            displayDate(id);
+            monthElement.style.pointerEvents = "auto";
+            monthElement.style.opacity = "1";
+            dayDiv.style.pointerEvents = "none";
+            dayDiv.style.opacity = "0.5";
+            weekViewButton.checked=false;
+        }
+        else{
+            monthElement.style.pointerEvents = "none";
+            monthElement.style.opacity = "0.5";
+        }
+        // monthElement.style.pointerEvents = monthElement.style.pointerEvents === "none"?"auto":"none";
+        // monthElement.style.opacity = monthElement.style.opacity==="0.5"?"1":"0.5";
+        // dayDiv.style.pointerEvents = "none";
+        // dayDiv.style.opacity = "0.5";
+    });
+
+    const dayDiv = document.createElement("div");
+    
+    const week = createSelectElement("week",weekOptions);
+    const day = createSelectElement("day",dayOptions);
+    dayDiv.appendChild(week);
+    dayDiv.appendChild(day);
+    week.addEventListener("change",()=>{
+        displayDay(id);
+    });
+    day.addEventListener("change",()=>{
+        displayDay(id);
+    });
+
+    const weekViewButton = document.createElement("input");
+    weekViewButton.setAttribute("type","checkbox");
+    weekViewButton.id = "weekViewButton";
+    dayDiv.classList.add("dayView");
+    parentDiv.appendChild(monthElement);
+    parentDiv.appendChild(weekViewButton);
+
+    weekViewButton.addEventListener("click",()=>{
+        // viewButton.checked = false;
+        // monthElement.style.pointerEvents = "none";
+        // monthElement.style.opacity ="0.5";
+        // dayDiv.style.pointerEvents = dayDiv.style.pointerEvents==="none"?"auto":"none";
+        // dayDiv.style.opacity = dayDiv.style.opacity==="0.5"?"1":"0.5";
+
+        if(weekViewButton.checked==true){
+            displayDay(id);
+            monthElement.style.pointerEvents = "none";
+            monthElement.style.opacity = "0.5";
+            dayDiv.style.pointerEvents = "auto";
+            dayDiv.style.opacity = "1";
+            viewButton.checked = false;
+        }
+        else{
+            dayDiv.style.pointerEvents = "none";
+            dayDiv.style.opacity = "0.5";
+        }
+    });
+    
+    parentDiv.appendChild(dayDiv);
+    return parentDiv;
+}
+function createSelectElement(id, options) {
+    const select = document.createElement('select');
+    select.id = id;
+    select.className = 'popupTextBox';
+
+    options.forEach(option => {
+        const opt = document.createElement('option');
+        opt.value = option.value;
+        opt.textContent = option.text;
+        select.appendChild(opt);
+    });
+
+    return select;
+}
+
+// Options for the week select
+const weekOptions = [
+    { value: 'First', text: 'First' },
+    { value: 'Second', text: 'Second' },
+    { value: 'Third', text: 'Third' },
+    { value: 'Fourth', text: 'Fourth' },
+    { value: 'Fifth', text: 'Fifth' },
+    { value: 'Last', text: 'Last' }
+];
+
+// Options for the day select
+const dayOptions = [
+    { value: 'Monday', text: 'Mon' },
+    { value: 'Tuesday', text: 'Tue' },
+    { value: 'Wednesday', text: 'Wed' },
+    { value: 'Thursday', text: 'Thu' },
+    { value: 'Friday', text: 'Fri' },
+    { value: 'Saturday', text: 'Sat' },
+    { value: 'Sunday', text: 'Sun' }
+];
+
+function displayDay(id){
+    if(document.getElementById("day").value && document.getElementById("week").value){
+        // console.log(document.getElementById("day").value + document.getElementById("week").value);
+        document.getElementById(id).textContent  = "On the " +document.getElementById("week").value +" "+ document.getElementById("day").value;
+    }
+}
+function displayDate(id){
+    if(dateSet.size>0){
+        let dateStr = "";
+                dateSet.forEach(date=>{
+                    dateStr += date;
+                });
+        document.getElementById(id).textContent = "On Each "+dateStr;
+    }
+    else{
+        document.getElementById(id).textContent = "Select Day(s) "+id;
     }
 }
 async function addEvent(year_in,month_in,day_in,URL){
@@ -180,16 +366,72 @@ async function addEvent(year_in,month_in,day_in,URL){
 
                 if(document.getElementById("custom_recurrence_type").value=='daily'){
                     document.getElementById("custom_recurrence_type_daily_div").style.display = 'block';
+                    document.getElementById("custom_recurrence_type_weekly_div").style.display = 'none';
+                    document.getElementById("custom_recurrence_type_monthly_div").style.display = 'none';
+                    document.getElementById("custom_recurrence_type_yearly_div").style.display = 'none';
+                    // document.getElementById("day_div").style.display = 'none';
                 }
+                else if(document.getElementById("custom_recurrence_type").value=='weekly'){
+                    document.getElementById("custom_recurrence_type_weekly_div").style.display = 'block';
+                    document.getElementById("custom_recurrence_type_daily_div").style.display = 'none';
+                    document.getElementById("custom_recurrence_type_monthly_div").style.display = 'none';
+                    document.getElementById("custom_recurrence_type_yearly_div").style.display = 'none';
+                    // document.getElementById("day_div").style.display = 'block';
+                }
+                else if(document.getElementById("custom_recurrence_type").value=='monthly'){
+                    // document.getElementById("yearView").innerHTML = ``;
+                    var yearView = document.getElementById("yearView");
+                    while(yearView.firstChild){
+                        yearView.removeChild(yearView.firstChild);
+                    }
+                    dateSet.clear();
+                    document.getElementById("select_month_days").textContent = "Select Day(s) for month";
+                    document.getElementById("custom_recurrence_type_monthly_div").style.display = 'block';
+                    document.getElementById("custom_recurrence_type_daily_div").style.display = 'none';
+                    document.getElementById("custom_recurrence_type_weekly_div").style.display = 'none';
+                    document.getElementById("custom_recurrence_type_yearly_div").style.display = 'none';
+                    // document.getElementById("day_div").style.display = 'none';
+                    // document.getElementById("dropdown").style.display = 'block';
+                    document.getElementById("monthView").appendChild(createMonthView("select_month_days"));
+                    document.getElementById("select_month_days").addEventListener
+                    ('click',()=>{
+                        document.getElementById("monthView").style.display =document.getElementById("monthView").style.display === 'block' ? 'none' : 'block';
+                    });
+                }
+                else if(document.getElementById("custom_recurrence_type").value=='yearly'){
+                    // document.getElementById("monthView").innerHTML = ``;
+                    var monthView = document.getElementById("monthView");
+                    while(monthView.firstChild){
+                        monthView.removeChild(monthView.firstChild);
+                    }
+                    document.getElementById("select_year_days").textContent = "Select Day(s) for year";
+                    dateSet.clear();
+                    document.getElementById("custom_recurrence_type_yearly_div").style.display = 'block';
+                    document.getElementById("custom_recurrence_type_daily_div").style.display = 'none';
+                    document.getElementById("custom_recurrence_type_weekly_div").style.display = 'none';
+                    document.getElementById("custom_recurrence_type_monthly_div").style.display = 'none';
+                    document.getElementById("yearView").appendChild(createMonthView("select_year_days"));
+                    document.getElementById("select_year_days").addEventListener
+                    ('click',()=>{
+                        document.getElementById("yearView").style.display =document.getElementById("yearView").style.display === 'block' ? 'none' : 'block';
+                    });
+                    // document.getElementById("day_div").style.display = 'none';
+                }
+
             });
         }else{
             // document.getElementById("recurrence_type").value = "daily";
-            document.getElementById("month_of_year_div").style.display = 'none';
-            document.getElementById("date_of_month_div").style.display = 'none';
-            document.getElementById("day_of_week_div").style.display = 'none';
+            // document.getElementById("month_of_year_div").style.display = 'none';
+            // document.getElementById("date_of_month_div").style.display = 'none';
+            // document.getElementById("day_of_week_div").style.display = 'none';
             document.getElementById("custom_recurrence_type_div").style.display = 'none';
-            document.getElementById("recurrence_interval_div").style.display = 'none';
-            document.getElementById("recurrence").style.display = 'none';
+            document.getElementById("custom_recurrence_type_yearly_div").style.display = 'none';
+            document.getElementById("custom_recurrence_type_daily_div").style.display = 'none';
+            document.getElementById("custom_recurrence_type_weekly_div").style.display = 'none';
+            document.getElementById("custom_recurrence_type_monthly_div").style.display = 'none';
+            // document.getElementById("day_div").style.display = 'none';
+            // document.getElementById("recurrence_interval_div").style.display = 'none';
+            // document.getElementById("recurrence").style.display = 'none';
         }
     });
 
@@ -332,22 +574,36 @@ async function editCalendar(id,name,description){
         };
         console.log(calendar);  
         try{
-            const response = await fetch(`http://localhost:8080/CalendarAPI/calendar/put?user=${user}`,
+            // const response = await fetch(`http://localhost:8080/CalendarAPI/calendar/put?user=${user}`,
+            //     {
+            //         method:"PUT",
+            //     headers:{
+            //         "Content-Type":"application/json"
+            //     },
+            //     body:JSON.stringify(calendar)
+            //     }
+            // );
+            const response = await fetch(`http://localhost:8080/CalendarAPI/secured/calendar/put?user=${user}`,
                 {
                     method:"PUT",
-                headers:{
-                    "Content-Type":"application/json"
-                },
-                body:JSON.stringify(calendar)
+                    headers:{
+                        "Content-Type":"application/json",
+                        'Authorization':`Bearer ${token}`,
+                    },
+                    body:JSON.stringify(calendar)
                 }
             );
+            if(!response.status===401 || !response.ok){
+            window.location.href="login.html";
+            }
             const raw = await response.text();
             const data = JSON.parse(raw);
             console.log(data.status);
             console.log(data.message);
             if (response.ok || data.status === "success") {
                 alert("inserted successfully");
-                event_popupOverlay.style.display = 'none';
+                fetchCalendars();
+                popupOverlay.style.display = 'none';
             } else {
                 throw new Error(data.message || "Failed. Please try again.");
             }
@@ -362,16 +618,31 @@ async function editCalendar(id,name,description){
 
 async function fetchEvents() {
     try {
-        const response = await fetch(`${API_URL}event/get?user=${user}&calendar_id=${calendar_id}`);
+        const package = {
+            calendarId:calendar_id,
+        };
+        // const response = await fetch(`${API_URL}event/get?user=${user}&calendar_id=${calendar_id}`);
+        const response = await fetch(`http://localhost:8080/CalendarAPI/secured/schedule/get?user=${user}`,
+            {
+                method:"POST",
+                headers:{
+                    'Authorization':`Bearer ${token}`,
+                },
+                body:JSON.stringify(package),
+            }
+        );
+        if(!response.status===401 || !response.ok){
+            window.location.href="login.html";
+        }
         const raw = await response.text();
-        // alert(raw);
+        alert(raw);
         const data = JSON.parse(raw);
         const list = document.getElementById("event_list");
         list.innerHTML = ``;
-        data.forEach(element=>{
+        data.forEach(function(element){
             const row = document.createElement("div");
-            row.innerHTML=`<button  class="rightpanelBtn" onClick="editEvent('${element.title}','${element.start_time}')">${element.title}</button><br><button>${element.start_time}</button>
-                            <button onClick = "deleteEvent('${element.title}')">X</button>`;
+            row.innerHTML=`<button  class="rightpanelBtn" onClick="editEvent('${element.title}','${element.startTime}')">${element.title}</button><br><button>${element.startTime}</button>
+                            <button onClick = "deleteEvent('${element.schedule_id}')">X</button>`;
             list.appendChild(row);
         });
         // Reset the events storage
@@ -380,7 +651,7 @@ async function fetchEvents() {
         // Group events by date
         data.forEach(event => {
             // Convert to local date string (YYYY-MM-DD format)
-            const startDate = new Date(event.start_time);
+            const startDate = new Date(event.startTime);
             const dateKey = `${startDate.getFullYear()}-${String(startDate.getMonth() + 1).padStart(2, '0')}-${String(startDate.getDate()).padStart(2, '0')}`;
             
             if (!eventsByDate[dateKey]) {
@@ -523,9 +794,25 @@ async function editEvent(title,start_time){
     
 }
 
-async function deleteEvent(title){
+async function deleteEvent(schedule_id){
     try{
-        const response = await fetch(`http://localhost:8080/CalendarAPI/event/delete?user=${user}&name=${title}`);
+        const package = {
+            "calendarId":calendar_id,
+            "schedule_id":schedule_id
+        };
+        // const response = await fetch(`http://localhost:8080/CalendarAPI/event/delete?user=${user}&name=${title}`);
+        const response = await fetch(`http://localhost:8080/CalendarAPI/secured/schedule/delete?user=${user}`,
+            {
+                method:"DELETE",
+                headers:{
+                    'Authorization':`Bearer ${token}`,
+                },
+                body:JSON.stringify(package),
+            }
+        );
+        if(!response.status===401 || !response.ok){
+            window.location.href="login.html";
+        }
         const raw = await response.text();
         const data = JSON.parse(raw);
         console.log(data.status);

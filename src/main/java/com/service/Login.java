@@ -70,6 +70,7 @@ public class Login extends ActionSupport{
 						map.put("status","success");
 						map.put("token",jwtToken);
 						jsonString = gson.toJson(map);
+						System.out.println(jsonString);
     					inputStream = new ByteArrayInputStream(jsonString.getBytes(StandardCharsets.UTF_8));
 						return SUCCESS;
 					}

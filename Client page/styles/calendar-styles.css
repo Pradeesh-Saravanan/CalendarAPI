@@ -223,6 +223,19 @@ body{
     /* background-color: #E4EFE7; */
     background-color: #E4EFE7;
 }
+.monthView{
+  /* border: 1px solid #ddd; */
+  /* border-radius:  10px; */
+  padding: 10px;
+  opacity: 0.5;
+  pointer-events: none;
+  /* background-color: #E4EFE7; */
+  /* background-color: #E4EFE7; */
+}
+.dayView{
+  opacity: 0.5;
+  pointer-events: none;
+}
 .weekdays, .days{
     display: grid;
     grid-template-columns: repeat(7,1fr);
@@ -310,6 +323,7 @@ button {
     border-radius: 10px;
     position: relative; 
     color: #000;
+    overflow: auto;
     /* transition: 0.5s; */
 
     height: 100%;
@@ -364,7 +378,19 @@ button {
   display: none;
   margin-left: 40px;
 }
-#day_of_week_div{
+#custom_recurrence_type_weekly_div{
+  display: none;
+  margin-left: 40px;
+}
+#custom_recurrence_type_monthly_div{
+  display: none;
+  margin-left: 40px;
+}
+#custom_recurrence_type_yearly_div{
+  display: none;
+  margin-left: 40px;
+}
+#day_div{
     display: none;
     margin-left: 40px;
 }
@@ -404,6 +430,48 @@ button {
     color: #666;
     cursor: pointer;
 }
+
+
+
+
+/* Dropdown Container */
+.dropdown {
+  position: relative;
+  display: block;
+}
+
+/* Dropdown Content (Hidden by Default) */
+.dropdown-content {
+  display: none;
+  position: absolute;
+  bottom: 70px;
+  right: 70px;
+  border-radius: 10px;
+  /* background-color: #f1f1f1; */
+  background-color: #E4EFE7;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
+  z-index: 1;
+}
+
+/* .package{
+  overflow: scroll;
+} */
+
+/* Links inside the Dropdown */
+.dropdown-content a {
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+}
+
+/* Show Dropdown on Hover */
+/* .dropdown:hover .dropdown-content {
+  display: block;
+} */
+
+
 /* button:hover {
     background: #FDFAE6;
 } */

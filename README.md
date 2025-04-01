@@ -55,4 +55,12 @@ Struts based Calendar API
 - Verified backend for the population criteria and post operations
 
 
+# 01/04/2025
+
+- Completed schedule put and delete methods 
+- Overloaded schedule class constructors
+- Secured the API calls by using JWT token with username as the subject
+- Created dynamic UI for repeat events 
+
+
 Note : To solve the inputName error thrown by struts xml file use non static getter and setter for inputstream variable in action 

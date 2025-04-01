@@ -2,6 +2,7 @@ package com.model;
 
 public class Schedule {
 	private int calendarId;
+	private int schedule_id;
 	private String title;
 	private String description;
 	private boolean allDay;
@@ -16,10 +17,37 @@ public class Schedule {
 	private String month;
 	private int offset;
 	
+	// Get method
 	public Schedule(int calendarId) {
 		this.calendarId = calendarId;
 	}
 	
+	// Delete method
+	public Schedule(int calendarId,int schedule_id) {
+		this.calendarId = calendarId;
+		this.schedule_id = schedule_id;
+	}
+	
+	// Put method 
+	public Schedule(int calendar_id,String title,String description,boolean allDay,String startTime,String endTime,boolean isRecurring,String frequency,double repeatInterval,String day,String date,String week,String month,int offset,int schedule_id) {
+		this.calendarId = calendar_id;
+		this.title = title;
+		this.description = description;
+		this.allDay = allDay;
+		this.startTime = startTime;
+		this.endTime = endTime;
+		this.isRecurring  = isRecurring;
+		this.frequency = frequency;
+		this.repeatInterval = repeatInterval;
+		this.day = day;
+		this.date = date;
+		this.week = week;
+		this.month = month;
+		this.offset = offset;
+		this.schedule_id = schedule_id;
+	}
+	
+	// Post method
 	public Schedule(int calendar_id,String title,String description,boolean allDay,String startTime,String endTime,boolean isRecurring,String frequency,double repeatInterval,String day,String date,String week,String month,int offset) {
 		this.calendarId = calendar_id;
 		this.title = title;
@@ -36,7 +64,6 @@ public class Schedule {
 		this.month = month;
 		this.offset = offset;
 	}
-	
 	
 	
 	public String getDescription() {
@@ -122,5 +149,13 @@ public class Schedule {
 	}
 	public void setCalendarId(int calendar_id) {
 		this.calendarId = calendar_id;
+	}
+
+	public int getScheduleId() {
+		return schedule_id;
+	}
+
+	public void setScheduleId(int schedule_id) {
+		this.schedule_id = schedule_id;
 	}
 }
