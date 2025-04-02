@@ -16,13 +16,14 @@ let first_time = false;
 
 fetchCalendars();
 
-fetchEvents();
+// fetchEvents();
 
 function logout(){
     localStorage.removeItem("token");
     window.location.href="login.html";
 }
 function openRightSidebar() {
+    fetchEvents();
     document.getElementById("myRightSidebar").style.width = "350px"; 
     document.getElementById("logoutbtn").style.marginRight = "350px"; 
     document.getElementById("rightbtn").style.marginRight = "350px"; 
@@ -57,19 +58,19 @@ function openSidebar() {
 
 
 
-  openPopupButton.addEventListener('click', (event) => {
+  openPopupButton.addEventListener('click',()=>{
       popupOverlay.style.display = 'flex';
   });
 
-  closePopupButton.addEventListener('click', () => {
+  closePopupButton.addEventListener('click',  ()=>{
       popupOverlay.style.display = 'none';
   });
 
-  event_closePopupButton.addEventListener('click', () => {
+  event_closePopupButton.addEventListener('click',  ()=>{
       event_popupOverlay.style.display = 'none';
   });
 
-  window.addEventListener('click', (event) => {
+  window.addEventListener('click',  (event)=>{
       if (event.target === popupOverlay ) {
           popupOverlay.style.display = 'none';
       }
@@ -78,7 +79,7 @@ function openSidebar() {
       }
   });
 
-  function changeView(name,id){
+  async function changeView(name,id){
     document.getElementById("calendar_name_display").innerText = name;
     calendar_id = id;
     fetchEvents();
@@ -166,6 +167,16 @@ function openSidebar() {
 
 const dateSet = new Set();
 
+function resetMontView(){
+    dateSet.clear();
+    document.getElementById("day").value = "Monday";
+    document.getElementById("week").value = "First";
+    const collection = document.querySelectorAll(".monthView div");
+    for(let i=0;i<collection.length;i++){
+        collection[i].style.backgroundColor = "transparent";
+    }
+}
+
 function createMonthView(id){
     const parentDiv = document.createElement("div");
 
@@ -197,7 +208,7 @@ function createMonthView(id){
                 }
             }
             if(dateSet.size==0){
-                document.getElementById(id).textContent = "Select Day(s) "+id;
+                document.getElementById(id).textContent = "Select Day(s) ";
             }
             else{
                 displayDate(id);
@@ -305,7 +316,8 @@ const dayOptions = [
     { value: 'Thursday', text: 'Thu' },
     { value: 'Friday', text: 'Fri' },
     { value: 'Saturday', text: 'Sat' },
-    { value: 'Sunday', text: 'Sun' }
+    { value: 'Sunday', text: 'Sun' },
+    { value: 'Day', text: 'Day' }
 ];
 
 function displayDay(id){
@@ -323,9 +335,152 @@ function displayDate(id){
         document.getElementById(id).textContent = "On Each "+dateStr;
     }
     else{
-        document.getElementById(id).textContent = "Select Day(s) "+id;
+        document.getElementById(id).textContent = "Select Day(s) ";
     }
 }
+
+const daySet = new Set();
+function customDays(){
+    const parent = document.getElementById("customDays");
+
+    dayOptions.forEach(option => {
+        const opt = document.createElement('div');
+        opt.classList.add("popupTextBox");
+        // opt.value = option.value;
+        opt.textContent = option.value;
+
+        opt.addEventListener("click",async function (event){
+            event.preventDefault();
+            opt.style.backgroundColor = opt.style.backgroundColor==="rgb(196, 217, 255)" ? "white":"rgb(196, 217, 255)";
+            if(daySet.has(opt.textContent+",")){
+                daySet.delete(opt.textContent+",");
+            }
+            else{
+                daySet.add(opt.textContent+",");
+            }
+            document.getElementById("customDays").style.display = 'block';
+            displayCustomDay();
+        });
+
+        parent.appendChild(opt);
+    });
+}
+
+function displayCustomDay(){
+    if(daySet.size>0){
+        let dayStr = "";
+                daySet.forEach(day=>{
+                    dayStr += day;
+                });
+        document.getElementById("select_custom_days").textContent = "On Each "+dayStr;
+    }
+    else{
+        document.getElementById("select_custom_days").textContent = "Select Day(s) ";
+    }
+}
+document.getElementById("repeat").addEventListener('change',async function (event){
+    event.preventDefault();
+    const parent = document.getElementById("recurrence");
+    if(document.getElementById("monthView").childElementCount===0){
+        document.getElementById("monthView").appendChild(createMonthView("select_days"));
+    }
+    if(document.getElementById("customDays").childElementCount===0){
+        customDays();
+    }
+    if(document.getElementById("repeat").checked){
+        document.getElementById("custom_recurrence_type_div").style.display = 'block';
+        document.getElementById("custom_recurrence_type").addEventListener("change",async function (event){
+
+            if(document.getElementById("custom_recurrence_type").value=='daily'){
+                document.getElementById("custom_recurrence_type_daily_div").style.display = 'block';
+                document.getElementById("custom_recurrence_type_weekly_div").style.display = 'none';
+                document.getElementById("custom_recurrence_type_monthly_div").style.display = 'none';
+                document.getElementById("custom_recurrence_type_yearly_div").style.display = 'none';
+                document.getElementById("month_of_year_div").style.display = "none";
+                document.getElementById("dropdown").style.display = 'none';
+                document.getElementById("day_div").style.display = 'none';
+            }
+            else if(document.getElementById("custom_recurrence_type").value=='weekly'){
+                document.getElementById("month_of_year_div").style.display = "none";
+                document.getElementById("custom_recurrence_type_weekly_div").style.display = 'block';
+                document.getElementById("custom_recurrence_type_daily_div").style.display = 'none';
+                document.getElementById("custom_recurrence_type_monthly_div").style.display = 'none';
+                document.getElementById("custom_recurrence_type_yearly_div").style.display = 'none';
+                document.getElementById("dropdown").style.display = 'none';
+                document.getElementById("day_div").style.display = 'block';
+            }
+            else if(document.getElementById("custom_recurrence_type").value=='monthly'){
+                // document.getElementById("yearView").innerHTML = ``;
+                // var yearView = document.getElementById("yearView");
+                // while(yearView.firstChild){
+                //     yearView.removeChild(yearView.firstChild);
+                // }
+                // dateSet.clear();
+                document.getElementById("select_days").textContent = "Select Day(s)";
+                // document.getElementById("day").value = "Monday";
+                // document.getElementById("week").value = "First";
+                resetMontView();
+                document.getElementById("dropdown").style.display = 'block';
+                document.getElementById("month_of_year_div").style.display = "none";
+                document.getElementById("custom_recurrence_type_monthly_div").style.display = 'block';
+                document.getElementById("custom_recurrence_type_daily_div").style.display = 'none';
+                document.getElementById("custom_recurrence_type_weekly_div").style.display = 'none';
+                document.getElementById("custom_recurrence_type_yearly_div").style.display = 'none';
+                document.getElementById("day_div").style.display = 'none';
+                // document.getElementById("dropdown").style.display = 'block';
+                // document.getElementById("monthView").appendChild(createMonthView("select_days"));
+                // document.getElementById("select_days").addEventListener
+                // ('click',()=>{
+                //     document.getElementById("monthView").style.display =document.getElementById("monthView").style.display === 'block' ? 'none' : 'block';
+                // });
+            }
+            else if(document.getElementById("custom_recurrence_type").value=='yearly'){
+                // document.getElementById("monthView").innerHTML = ``;
+                // var monthView = document.getElementById("monthView");
+                // while(monthView.firstChild){
+                //     monthView.removeChild(monthView.firstChild);
+                // }
+                document.getElementById("select_days").textContent = "Select Day(s)";
+                // dateSet.clear();
+                // document.getElementById("day").value = "Monday";
+                // document.getElementById("week").value = "First";
+                resetMontView();
+                document.getElementById("dropdown").style.display = 'block';
+                document.getElementById("month_of_year_div").style.display = 'block';
+                document.getElementById("custom_recurrence_type_yearly_div").style.display = 'block';
+                document.getElementById("custom_recurrence_type_daily_div").style.display = 'none';
+                document.getElementById("custom_recurrence_type_weekly_div").style.display = 'none';
+                document.getElementById("custom_recurrence_type_monthly_div").style.display = 'none';
+                document.getElementById("day_div").style.display = 'none';
+                // document.getElementById("yearView").appendChild(createMonthView("select_days"));
+                // document.getElementById("select_days").addEventListener
+                // ('click',()=>{
+                //     document.getElementById("monthView").style.display =document.getElementById("monthView").style.display === 'block' ? 'none' : 'block';
+                // });
+                // document.getElementById("day_div").style.display = 'none';
+            }
+        });
+    }else{
+        // document.getElementById("recurrence_type").value = "daily";
+        // document.getElementById("month_of_year_div").style.display = 'none';
+        // document.getElementById("date_of_month_div").style.display = 'none';
+        // document.getElementById("day_of_week_div").style.display = 'none';
+        document.getElementById("month_of_year_div").style.display = "none";
+        document.getElementById("day_div").style.display = 'none';
+        document.getElementById("monthView").innerHTML = ``;
+        document.getElementById("customDays").innerHTML = ``;
+        document.getElementById("dropdown").style.display = "none";
+        document.getElementById("custom_recurrence_type_div").style.display = 'none';
+        document.getElementById("custom_recurrence_type_yearly_div").style.display = 'none';
+        document.getElementById("custom_recurrence_type_daily_div").style.display = 'none';
+        document.getElementById("custom_recurrence_type_weekly_div").style.display = 'none';
+        document.getElementById("custom_recurrence_type_monthly_div").style.display = 'none';
+        // document.getElementById("day_div").style.display = 'none';
+        // document.getElementById("recurrence_interval_div").style.display = 'none';
+        // document.getElementById("recurrence").style.display = 'none';
+    }
+    
+});
 async function addEvent(year_in,month_in,day_in,URL){
     event_popupOverlay.style.display = 'flex';
     console.log("url",URL);
@@ -341,7 +496,7 @@ async function addEvent(year_in,month_in,day_in,URL){
     document.getElementById("event-start-date").value = `${year}-${month}-${day}`;
     document.getElementById("event-start-time").value = `${hour}:${minutes}`;
 
-    document.getElementById("all_day").addEventListener('change',(event)=>{
+    document.getElementById("all_day").addEventListener('change', (event)=>{
         if(document.getElementById("all_day").checked){
             document.getElementById("event-end-date").value = `${year}-${month}-${day}`;
             document.getElementById("event-start-time").value = `${hour}:${minutes}`;
@@ -357,89 +512,13 @@ async function addEvent(year_in,month_in,day_in,URL){
         }
     });
 
-    document.getElementById("repeat").addEventListener('change',(event)=>{
-        event.preventDefault();
-        const parent = document.getElementById("recurrence");
-        if(document.getElementById("repeat").checked){
-            document.getElementById("custom_recurrence_type_div").style.display = 'block';
-            document.getElementById("custom_recurrence_type").addEventListener("change",()=>{
-
-                if(document.getElementById("custom_recurrence_type").value=='daily'){
-                    document.getElementById("custom_recurrence_type_daily_div").style.display = 'block';
-                    document.getElementById("custom_recurrence_type_weekly_div").style.display = 'none';
-                    document.getElementById("custom_recurrence_type_monthly_div").style.display = 'none';
-                    document.getElementById("custom_recurrence_type_yearly_div").style.display = 'none';
-                    // document.getElementById("day_div").style.display = 'none';
-                }
-                else if(document.getElementById("custom_recurrence_type").value=='weekly'){
-                    document.getElementById("custom_recurrence_type_weekly_div").style.display = 'block';
-                    document.getElementById("custom_recurrence_type_daily_div").style.display = 'none';
-                    document.getElementById("custom_recurrence_type_monthly_div").style.display = 'none';
-                    document.getElementById("custom_recurrence_type_yearly_div").style.display = 'none';
-                    // document.getElementById("day_div").style.display = 'block';
-                }
-                else if(document.getElementById("custom_recurrence_type").value=='monthly'){
-                    // document.getElementById("yearView").innerHTML = ``;
-                    var yearView = document.getElementById("yearView");
-                    while(yearView.firstChild){
-                        yearView.removeChild(yearView.firstChild);
-                    }
-                    dateSet.clear();
-                    document.getElementById("select_month_days").textContent = "Select Day(s) for month";
-                    document.getElementById("custom_recurrence_type_monthly_div").style.display = 'block';
-                    document.getElementById("custom_recurrence_type_daily_div").style.display = 'none';
-                    document.getElementById("custom_recurrence_type_weekly_div").style.display = 'none';
-                    document.getElementById("custom_recurrence_type_yearly_div").style.display = 'none';
-                    // document.getElementById("day_div").style.display = 'none';
-                    // document.getElementById("dropdown").style.display = 'block';
-                    document.getElementById("monthView").appendChild(createMonthView("select_month_days"));
-                    document.getElementById("select_month_days").addEventListener
-                    ('click',()=>{
-                        document.getElementById("monthView").style.display =document.getElementById("monthView").style.display === 'block' ? 'none' : 'block';
-                    });
-                }
-                else if(document.getElementById("custom_recurrence_type").value=='yearly'){
-                    // document.getElementById("monthView").innerHTML = ``;
-                    var monthView = document.getElementById("monthView");
-                    while(monthView.firstChild){
-                        monthView.removeChild(monthView.firstChild);
-                    }
-                    document.getElementById("select_year_days").textContent = "Select Day(s) for year";
-                    dateSet.clear();
-                    document.getElementById("custom_recurrence_type_yearly_div").style.display = 'block';
-                    document.getElementById("custom_recurrence_type_daily_div").style.display = 'none';
-                    document.getElementById("custom_recurrence_type_weekly_div").style.display = 'none';
-                    document.getElementById("custom_recurrence_type_monthly_div").style.display = 'none';
-                    document.getElementById("yearView").appendChild(createMonthView("select_year_days"));
-                    document.getElementById("select_year_days").addEventListener
-                    ('click',()=>{
-                        document.getElementById("yearView").style.display =document.getElementById("yearView").style.display === 'block' ? 'none' : 'block';
-                    });
-                    // document.getElementById("day_div").style.display = 'none';
-                }
-
-            });
-        }else{
-            // document.getElementById("recurrence_type").value = "daily";
-            // document.getElementById("month_of_year_div").style.display = 'none';
-            // document.getElementById("date_of_month_div").style.display = 'none';
-            // document.getElementById("day_of_week_div").style.display = 'none';
-            document.getElementById("custom_recurrence_type_div").style.display = 'none';
-            document.getElementById("custom_recurrence_type_yearly_div").style.display = 'none';
-            document.getElementById("custom_recurrence_type_daily_div").style.display = 'none';
-            document.getElementById("custom_recurrence_type_weekly_div").style.display = 'none';
-            document.getElementById("custom_recurrence_type_monthly_div").style.display = 'none';
-            // document.getElementById("day_div").style.display = 'none';
-            // document.getElementById("recurrence_interval_div").style.display = 'none';
-            // document.getElementById("recurrence").style.display = 'none';
-        }
-    });
-
+    
 
     
-    document.getElementById("event_form_button").addEventListener('click',async (event)=>{
+    
+    document.getElementById("event_form_button").addEventListener('click',async function (event){
         event.preventDefault();
-        let final_type= "";
+        // let final_type= "";
         const title = document.getElementById("event_name").value;
         const description = document.getElementById("event_description").value;
 
@@ -458,13 +537,13 @@ async function addEvent(year_in,month_in,day_in,URL){
         // const start_time = new Date(startDateString);
         // const end_time = new Date(endDateString);
 
-        console.log(document.getElementById("custom_recurrence_type").value);
-        if(document.getElementById("recurrence_type").value==="custom"){
-            final_type = `custom ${document.getElementById("custom_recurrence_type").value}`;
-        }
-        else{
-            final_type =document.getElementById("recurrence_type").value;
-        }
+        // console.log(document.getElementById("custom_recurrence_type").value);
+        // if(document.getElementById("recurrence_type").value==="custom"){
+        //     final_type = `custom ${document.getElementById("custom_recurrence_type").value}`;
+        // }
+        // else{
+        //     final_type =document.getElementById("recurrence_type").value;
+        // }
         let all_day ="false";
         if(document.getElementById("all_day").checked){
             all_day = "true";
@@ -473,38 +552,111 @@ async function addEvent(year_in,month_in,day_in,URL){
         if(document.getElementById("repeat").checked){
             repeat="true";
         }
-        if(!title ||
-            !description ||
-            !start_time
-        ){
+        if(!title || !description || !start_time){
             alert("Fill all fields");
             return;
         }
+        const frequency = document.getElementById("custom_recurrence_type").value;
+        let repeatInterval = null;
+        let day = null;
+        let date = null;
+        let week = null;
+        let month = null;
+        let recurrence_type = null;
+        let isMonthView = document.getElementById("monthViewButton").checked;
+        let isWeekView = document.getElementById("weekViewButton").checked;
+        switch(frequency){
+            case "daily":
+                recurrence_type = document.getElementById("custom_recurrence_type_daily").value;
+                if(recurrence_type=="5"){
+                    repeatInterval = document.getElementById("custom_number").value;
+                }
+                else{
+                    repeatInterval = recurrence_type;
+                }
+                break;
+            case "weekly":
+                recurrence_type = document.getElementById("custom_recurrence_type_weekly").value;
+                if(recurrence_type=="5"){
+                    repeatInterval = document.getElementById("custom_number").value;
+                }
+                else{
+                    repeatInterval = recurrence_type;
+                }
+                let dayStr = "";
+                daySet.forEach(day=>{
+                    dayStr += day;
+                });
+                day = dayStr;
+                break;
+            case "monthly":
+                recurrence_type = document.getElementById("custom_recurrence_type_monthly").value;
+                if(recurrence_type=="5"){
+                    repeatInterval = document.getElementById("custom_number").value;
+                }
+                else{
+                    repeatInterval = recurrence_type;
+                }
+                if(isMonthView==true){
+                    let dateStr = "";
+                    dateSet.forEach(date=>{
+                        dateStr += date;
+                    });
+                    date = dateStr;
+                }
+                else if (isWeekView==true){
+                    week = document.getElementById("week").value;
+                    day = document.getElementById("day").value;
+                }
+                break;
+            case "yearly":
+                repeatInterval = document.getElementById("custom_recurrence_type_yearly").value;
+                month = document.getElementById("month_of_year").value;
+                if(isMonthView==true){
+                    console.log(dateSet);
+                    let dateStr = "";
+                    dateSet.forEach(date=>{
+                        dateStr += date;
+                    });
+                    date = dateStr;
+                }
+                else if (isWeekView==true){
+                    week = document.getElementById("week").value;
+                    day = document.getElementById("day").value;
+                }
+                break;
+        }
+
         const package = {
-            calendar_id:calendar_id,
+            calendarId:calendar_id,
             title:title,
             description:description,
-            all_day:all_day,
-            start_time:start_time,
-            end_time:end_time,
-            repeat:repeat,
-            recurrence_type:final_type,
-            recurrence_interval:document.getElementById("recurrence_interval").value,
-            day_of_week :document.getElementById("day_of_week").value,
-            date_of_month:document.getElementById("date_of_month").value,
-            month_of_year:document.getElementById("month_of_year").value
+            allDay:all_day,
+            startTime:start_time,
+            endTime:end_time,
+            isRecurring:repeat,
+            frequency:frequency,
+            repeatInterval:repeatInterval,
+            day :day,
+            date:date,
+            month:month,
+            week:week,
+            offset:"1"
         }
         console.log("package: ",package);
+        // return;
         try{
-            const response = await fetch(URL,
+            const response = await fetch(`http://localhost:8080/CalendarAPI/secured/schedule/post?user=${user}`,
                 {
                     method:"POST",
                 headers:{
-                    "Content-Type":"application/json"
+                    "Content-Type":"application/json",
+                    "Authorization":`Bearer ${token}`,
                 },
                 body:JSON.stringify(package),
                 }
             );
+            document.getElementById("event_form_button").disabled = true;
             const raw = await response.text();
             const data = JSON.parse(raw);
             console.log(data.status);
@@ -519,12 +671,20 @@ async function addEvent(year_in,month_in,day_in,URL){
                 document.getElementById("repeat").checked= false;
                 document.getElementById("all_day").checked= false;
                 document.getElementById("custom_recurrence_type").value= 'daily';
-                document.getElementById("recurrence").style.display = 'none';
+
+                document.getElementById("custom_recurrence_type_weekly_div").style.display = 'none';
+                document.getElementById("custom_recurrence_type_daily_div").style.display = 'none';
+                document.getElementById("custom_recurrence_type_monthly_div").style.display = 'none';
+                document.getElementById("custom_recurrence_type_yearly_div").style.display = 'none';
+                document.getElementById("dropdown").style.display = 'none';
+                document.getElementById("day_div").style.display = 'none';
                 document.getElementById("custom_recurrence_type_div").style.display = 'none';
-                document.getElementById("recurrence_interval_div").style.display = 'none';
-                document.getElementById("date_of_month").style.display = 'none';
-                document.getElementById("month_of_year").style.display = 'none';
-                document.getElementById("day_of_week").style.display = 'none';
+
+                // document.getElementById("recurrence").style.display = 'none';
+                // document.getElementById("recurrence_interval_div").style.display = 'none';
+                // document.getElementById("date_of_month").style.display = 'none';
+                // document.getElementById("month_of_year").style.display = 'none';
+                // document.getElementById("day_of_week").style.display = 'none';
                 event_popupOverlay.style.display = 'none';
                 fetchCalendars();
                 fetchEvents(); // Add this line
@@ -535,8 +695,13 @@ async function addEvent(year_in,month_in,day_in,URL){
         catch(error){
             console.log(error);
         }
+        finally{
+            document.getElementById("event_form_button").disabled = false;  
+        }
     });
 }
+
+
 
 function showCustomOption(){
     document.getElementById("recurrence_type_custom").addEventListener("change",()=>{
@@ -554,6 +719,40 @@ function showCustomOption(){
         }
     });
 }
+
+document.getElementById("custom_recurrence_type_daily").addEventListener("change",()=>{
+    if(document.getElementById("custom_recurrence_type_daily").value=="5"){
+        document.getElementById("custom_repeat").style.display = document.getElementById("custom_repeat").style.display==="block"?"none":"block";
+    }
+    else{
+        document.getElementById("custom_repeat").style.display= 'none';
+    }
+});
+
+document.getElementById("custom_recurrence_type_weekly").addEventListener("change",()=>{
+    if(document.getElementById("custom_recurrence_type_weekly").value=="5"){
+        document.getElementById("custom_repeat").style.display = document.getElementById("custom_repeat").style.display==="block"?"none":"block";
+    }
+    else{
+        document.getElementById("custom_repeat").style.display= 'none';
+    }
+});
+document.getElementById("custom_recurrence_type_monthly").addEventListener("change",()=>{
+    if(document.getElementById("custom_recurrence_type_monthly").value=="5"){
+        document.getElementById("custom_repeat").style.display = document.getElementById("custom_repeat").style.display==="block"?"none":"block";
+    }
+    else{
+        document.getElementById("custom_repeat").style.display= 'none';
+    }
+});
+document.getElementById("select_days").addEventListener
+        ('click',()=>{
+            document.getElementById("monthView").style.display =document.getElementById("monthView").style.display === 'block' ? 'none' : 'block';
+        });
+        document.getElementById("day_div").addEventListener
+            ('click',()=>{
+                document.getElementById("customDays").style.display =document.getElementById("customDays").style.display === 'block' ? 'none' : 'block';
+        });
 async function editCalendar(id,name,description){
 
     console.log(id,name,description);
@@ -563,7 +762,7 @@ async function editCalendar(id,name,description){
     document.getElementById('form_button').innerText = "Edit";
     document.getElementById('form_title').innerText = "Edit Calendar";
 
-    document.getElementById('form_button').onclick = async function () {
+    document.getElementById('form_button').onclick = async ()=> {
         if(!document.getElementById("calendar_name").value || !document.getElementById("description").value){
             alert("fill all fields");
         }
@@ -621,6 +820,8 @@ async function fetchEvents() {
         const package = {
             calendarId:calendar_id,
         };
+        const list = document.getElementById("event_list");
+        list.innerHTML = ``;
         // const response = await fetch(`${API_URL}event/get?user=${user}&calendar_id=${calendar_id}`);
         const response = await fetch(`http://localhost:8080/CalendarAPI/secured/schedule/get?user=${user}`,
             {
@@ -631,25 +832,50 @@ async function fetchEvents() {
                 body:JSON.stringify(package),
             }
         );
-        if(!response.status===401 || !response.ok){
-            window.location.href="login.html";
-        }
+
+        // fetch(`http://localhost:8080/CalendarAPI/secured/schedule/get?user=${user}`,
+        //     {
+        //         method:"POST",
+        //         headers:{
+        //             'Authorization':`Bearer ${token}`,
+        //         },
+        //         body:JSON.stringify(package),
+        //     }
+        // ).then(response=>response.json()).then(data=>{
+        //     data.forEach(event => {
+        //         const row = document.createElement("div");
+        //         row.innerHTML=`<button  class="rightpanelBtn" onClick="editEvent('${event.title}','${event.startTime}')">${event.title}</button><br><button>${event.startTime}</button>
+        //                         <button onClick = "deleteEvent('${event.schedule_id}')">X</button>`;
+        //         list.appendChild(row);
+        //         // Convert to local date string (YYYY-MM-DD format)
+        //         const startDate = new Date(event.startTime);
+        //         const dateKey = `${startDate.getFullYear()}-${String(startDate.getMonth() + 1).padStart(2, '0')}-${String(startDate.getDate()).padStart(2, '0')}`;
+                
+        //         if (!eventsByDate[dateKey]) {
+        //             eventsByDate[dateKey] = [];
+        //         }
+        //         eventsByDate[dateKey].push(event);
+        //     });
+        //     if(!response.status===401 || !response.ok){
+        //         window.location.href="login.html";
+        //     }
+        // }).catch(error=>console.error(error));
         const raw = await response.text();
-        alert(raw);
+        // alert(raw);
         const data = JSON.parse(raw);
-        const list = document.getElementById("event_list");
-        list.innerHTML = ``;
-        data.forEach(function(element){
-            const row = document.createElement("div");
-            row.innerHTML=`<button  class="rightpanelBtn" onClick="editEvent('${element.title}','${element.startTime}')">${element.title}</button><br><button>${element.startTime}</button>
-                            <button onClick = "deleteEvent('${element.schedule_id}')">X</button>`;
-            list.appendChild(row);
-        });
+        
+        // data.forEach(element=>{
+            
+        // });
         // Reset the events storage
         eventsByDate = {};
         
         // Group events by date
         data.forEach(event => {
+            const row = document.createElement("div");
+            row.innerHTML=`<button  class="rightpanelBtn" onClick="editEvent('${event.title}','${event.startTime}')">${event.title}</button><br><button>${event.startTime}</button>
+                            <button onClick = "deleteEvent('${event.schedule_id}')">X</button>`;
+            list.appendChild(row);
             // Convert to local date string (YYYY-MM-DD format)
             const startDate = new Date(event.startTime);
             const dateKey = `${startDate.getFullYear()}-${String(startDate.getMonth() + 1).padStart(2, '0')}-${String(startDate.getDate()).padStart(2, '0')}`;
@@ -679,22 +905,97 @@ async function editEvent(title,start_time){
     const startTime = `${startDate.getHours()}:${startDate.getMinutes()}`
     const endTime = `${endDate.getHours()}:${endDate.getMinutes()}`
     console.log(event);
- 
+    const schedule_id = event.schedule_id;
     document.getElementById("event_name").value= title;
     document.getElementById("event_description").value= event.description;
     document.getElementById("event-start-date").value= dateKey;
     document.getElementById("event-end-date").value= endDateTime;
     document.getElementById("event-start-time").value= startTime;
     document.getElementById("event-end-time").value= endTime;
-    document.getElementById("repeat").checked= event.repeat;
-    document.getElementById("all_day").checked= event.all_day;
-    document.getElementById("custom_recurrence_type").value= event.recurrence_type;
+    document.getElementById("repeat").checked= event.repeatInterval;
+    document.getElementById("all_day").checked= event.allDay;
+    document.getElementById("custom_recurrence_type").value= event.frequency;
+    document.getElementById("custom_recurrence_type_div").style.display= "block";
+    switch(event.frequency){
+        case "daily":
+            document.getElementById("custom_recurrence_type_daily_div").style.display = 'block';
+            document.getElementById("custom_recurrence_type_daily").value=event.repeatInterval;
+            break;
+        // case "weekly":
+        //     recurrence_type = document.getElementById("custom_recurrence_type_weekly").value;
+        //     if(recurrence_type=="5"){
+        //         repeatInterval = document.getElementById("custom_number").value;
+        //     }
+        //     else{
+        //         repeatInterval = recurrence_type;
+        //     }
+        //     let dayStr = "";
+        //     daySet.forEach(day=>{
+        //         dayStr += day;
+        //     });
+        //     day = dayStr;
+        //     break;
+        // case "monthly":
+        //     recurrence_type = document.getElementById("custom_recurrence_type_monthly").value;
+        //     if(recurrence_type=="5"){
+        //         repeatInterval = document.getElementById("custom_number").value;
+        //     }
+        //     else{
+        //         repeatInterval = recurrence_type;
+        //     }
+        //     if(isMonthView==true){
+        //         let dateStr = "";
+        //         dateSet.forEach(date=>{
+        //             dateStr += date;
+        //         });
+        //         date = dateStr;
+        //     }
+        //     else if (isWeekView==true){
+        //         week = document.getElementById("week").value;
+        //         day = document.getElementById("day").value;
+        //     }
+        //     break;
+        // case "yearly":
+        //     repeatInterval = document.getElementById("custom_recurrence_type_yearly").value;
+        //     month = document.getElementById("month_of_year").value;
+        //     if(isMonthView==true){
+        //         console.log(dateSet);
+        //         let dateStr = "";
+        //         dateSet.forEach(date=>{
+        //             dateStr += date;
+        //         });
+        //         date = dateStr;
+        //     }
+        //     else if (isWeekView==true){
+        //         week = document.getElementById("week").value;
+        //         day = document.getElementById("day").value;
+        //     }
+        //     break;
+    }
+    // document.getElementById("day").value= event.day;
+    // document.getElementById("date").value= event.date;
+    document.getElementById("month_of_year").value= event.month;
+    // document.getElementById("week").value= event.week;
 
     event_popupOverlay.style.display = 'flex';
     document.getElementById("event_form_button").innerText = "Edit";
-    document.getElementById("event_form_button").addEventListener('click',async function(){
-        // addEvent(startDate.getFullYear(),startDate.getMonth(),startDate.getDate(),EVENT_UPDATE_URL);
-        let final_type= "";
+    // return;
+    document.getElementById("all_day").addEventListener('change', (event)=>{
+        if(document.getElementById("all_day").checked){
+            document.getElementById("event-end-date").value = startDate;
+            document.getElementById("event-start-time").value = startTime;
+            document.getElementById("event-end-time").value = `${23}:${59}`;
+            document.getElementById("event-start-time").style.display = 'none';
+            document.getElementById("event-end-time").style.display = 'none';
+        }
+        else{
+            document.getElementById("event-start-time").style.display = '';
+            document.getElementById("event-end-time").style.display = '';
+            // document.getElementById("event-end-time").value = ``;
+            // document.getElementById("event-end-date").value = ``;
+        }
+    });
+    document.getElementById("event_form_button").addEventListener('click',async ()=>{
         const title = document.getElementById("event_name").value;
         const description = document.getElementById("event_description").value;
 
@@ -713,13 +1014,13 @@ async function editEvent(title,start_time){
         // const start_time = new Date(startDateString);
         // const end_time = new Date(endDateString);
 
-        console.log(document.getElementById("custom_recurrence_type").value);
-        if(document.getElementById("recurrence_type").value==="custom"){
-            final_type = `custom ${document.getElementById("custom_recurrence_type").value}`;
-        }
-        else{
-            final_type =document.getElementById("recurrence_type").value;
-        }
+        // console.log(document.getElementById("custom_recurrence_type").value);
+        // if(document.getElementById("recurrence_type").value==="custom"){
+        //     final_type = `custom ${document.getElementById("custom_recurrence_type").value}`;
+        // }
+        // else{
+        //     final_type =document.getElementById("recurrence_type").value;
+        // }
         let all_day ="false";
         if(document.getElementById("all_day").checked){
             all_day = "true";
@@ -728,36 +1029,108 @@ async function editEvent(title,start_time){
         if(document.getElementById("repeat").checked){
             repeat="true";
         }
-        if(!title ||
-            !description ||
-            !start_time
-        ){
+        if(!title || !description || !start_time){
             alert("Fill all fields");
             return;
         }
+        const frequency = document.getElementById("custom_recurrence_type").value;
+        let repeatInterval = null;
+        let day = null;
+        let date = null;
+        let week = null;
+        let month = null;
+        let recurrence_type = null;
+        let isMonthView = document.getElementById("monthViewButton").checked;
+        let isWeekView = document.getElementById("weekViewButton").checked;
+        switch(frequency){
+            case "daily":
+                recurrence_type = document.getElementById("custom_recurrence_type_daily").value;
+                if(recurrence_type=="5"){
+                    repeatInterval = document.getElementById("custom_number").value;
+                }
+                else{
+                    repeatInterval = recurrence_type;
+                }
+                break;
+            case "weekly":
+                recurrence_type = document.getElementById("custom_recurrence_type_weekly").value;
+                if(recurrence_type=="5"){
+                    repeatInterval = document.getElementById("custom_number").value;
+                }
+                else{
+                    repeatInterval = recurrence_type;
+                }
+                let dayStr = "";
+                daySet.forEach(day=>{
+                    dayStr += day;
+                });
+                day = dayStr;
+                break;
+            case "monthly":
+                recurrence_type = document.getElementById("custom_recurrence_type_monthly").value;
+                if(recurrence_type=="5"){
+                    repeatInterval = document.getElementById("custom_number").value;
+                }
+                else{
+                    repeatInterval = recurrence_type;
+                }
+                if(isMonthView==true){
+                    let dateStr = "";
+                    dateSet.forEach(date=>{
+                        dateStr += date;
+                    });
+                    date = dateStr;
+                }
+                else if (isWeekView==true){
+                    week = document.getElementById("week").value;
+                    day = document.getElementById("day").value;
+                }
+                break;
+            case "yearly":
+                repeatInterval = document.getElementById("custom_recurrence_type_yearly").value;
+                month = document.getElementById("month_of_year").value;
+                if(isMonthView==true){
+                    console.log(dateSet);
+                    let dateStr = "";
+                    dateSet.forEach(date=>{
+                        dateStr += date;
+                    });
+                    date = dateStr;
+                }
+                else if (isWeekView==true){
+                    week = document.getElementById("week").value;
+                    day = document.getElementById("day").value;
+                }
+                break;
+        }
+
         const package = {
-            calendar_id:calendar_id,
+            calendarId:calendar_id,
+            schedule_id:schedule_id,
             title:title,
             description:description,
-            all_day:all_day,
-            start_time:start_time,
-            end_time:end_time,
-            repeat:repeat,
-            recurrence_type:final_type,
-            recurrence_interval:document.getElementById("recurrence_interval").value,
-            day_of_week :document.getElementById("day_of_week").value,
-            date_of_month:document.getElementById("date_of_month").value,
-            month_of_year:document.getElementById("month_of_year").value
+            allDay:all_day,
+            startTime:start_time,
+            endTime:end_time,
+            isRecurring:repeat,
+            frequency:frequency,
+            repeatInterval:repeatInterval,
+            day :day,
+            date:date,
+            month:month,
+            week:week,
+            offset:"1"
         }
         console.log("package: ",package);
         try{
-            const response = await fetch(EVENT_UPDATE_URL,
+            const response = await fetch(`http://localhost:8080/CalendarAPI/secured/schedule/put?user=${user}`,
                 {
                     method:"POST",
-                headers:{
-                    "Content-Type":"application/json"
-                },
-                body:JSON.stringify(package),
+                    headers:{
+                        "Content-Type":"application/json",
+                        "Authorization":`Bearer ${token}`,
+                    },
+                    body:JSON.stringify(package),
                 }
             );
             const raw = await response.text();
@@ -774,12 +1147,14 @@ async function editEvent(title,start_time){
                 document.getElementById("repeat").checked= false;
                 document.getElementById("all_day").checked= false;
                 document.getElementById("custom_recurrence_type").value= 'daily';
-                document.getElementById("recurrence").style.display = 'none';
+                document.getElementById("custom_recurrence_type_weekly_div").style.display = 'none';
+                document.getElementById("custom_recurrence_type_daily_div").style.display = 'none';
+                document.getElementById("custom_recurrence_type_monthly_div").style.display = 'none';
+                document.getElementById("custom_recurrence_type_yearly_div").style.display = 'none';
+                document.getElementById("dropdown").style.display = 'none';
+                document.getElementById("day_div").style.display = 'none';
                 document.getElementById("custom_recurrence_type_div").style.display = 'none';
-                document.getElementById("recurrence_interval_div").style.display = 'none';
-                document.getElementById("date_of_month").style.display = 'none';
-                document.getElementById("month_of_year").style.display = 'none';
-                document.getElementById("day_of_week").style.display = 'none';
+
                 event_popupOverlay.style.display = 'none';
                 fetchCalendars();
                 fetchEvents(); // Add this line
@@ -909,7 +1284,7 @@ prevButton.addEventListener('click',()=>{
     fetchEvents();
 });
 
-nextButton.addEventListener('click',()=>{
+nextButton.addEventListener('click',()=> {
     currentYear++;
     render(currentYear);
     fetchCalendars();

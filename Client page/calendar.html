@@ -125,68 +125,79 @@
                     <option value="5">Custom</option>
                 </select> 
 
-                <div class="dropdown">
-                    <button class="popupTextBox" id="select_month_days">Select Day(s) for month</button>
-                    <div id = "monthView" class="dropdown-content">
-
-                    </div>
-                </div>
             </div>
+            
 
             <div id = "custom_recurrence_type_yearly_div">
                 <select name="custom_type" id="custom_recurrence_type_yearly" class="popupTextBox">
-                    <option value="1">Yearly 4 times(Quaterly)</option>
-                    <option value="2">Yearly 2 times(Bi-Annually)</option>
-                    <option value="3">Yearly Once(Annually)</option>
-                    <option value="4">Once every two years</option>
+                    <option value="0.25">Yearly 4 times(Quaterly)</option>
+                    <option value="0.5">Yearly 2 times(Bi-Annually)</option>
+                    <option value="1">Yearly Once(Annually)</option>
+                    <option value="2">Once every two years</option>
                 </select> 
 
-                <div class="dropdown">
-                    <button class="popupTextBox" id="select_year_days">Select Day(s) for year</button>
+                <!-- <div class="dropdown">
+                    <button class="popupTextBox" id="select_days">Select Day(s) for year</button>
                     <div id = "yearView" class="dropdown-content">
 
                     </div>
-                </div>
+                </div> -->
+            </div>
+
+            <div id = "custom_repeat" class="custom_repeat">
+                <input type="number" id = "custom_number" class="popupTextBox" placeholder="number">
             </div>
 
             <!-- <div id = "recurrence_interval_div">
                 <label for="recurrence_interval">Repeat Interval</label>
                 <input type="text" id="recurrence_interval"  class="popupTextBox">
             </div> -->
-            <!-- <div id = "day_div">
-                <label for="day">Day</label>
-                <select name="day" id="day" class="popupTextBox">
-                    <option value="1">Mon</option>
-                    <option value="2">Tue</option>
-                    <option value="3">Wed</option>
-                    <option value="4">Thu</option>
-                    <option value="5">Fri</option>
-                    <option value="6">Sat</option>
-                    <option value="7">Sun</option>
-                    </select><br>
-            </div> -->
             <!-- <div id="date_of_month_div">
                 <label for="date_of_month">Date</label>
                 <input type="number" id = "date_of_month" class="popupTextBox"><br>
             </div> -->
-            <!-- <div id = "month_of_year_div">
-                <label for="month_of_year">Year</label>
+            <div id = "month_of_year_div">
+                <label for="month_of_year">Start Month</label>
                 <select name="year" id="month_of_year" class="popupTextBox">
-                    <option value="1">Jan</option>
-                    <option value="2">Feb</option>
-                    <option value="3">Mar</option>
-                    <option value="4">Apr</option>
-                    <option value="5">May</option>
-                    <option value="6">Jun</option>
-                    <option value="7">Jul</option>
-                    <option value="8">Aug</option>
-                    <option value="9">Sep</option>
-                    <option value="10">Oct</option>
-                    <option value="11">Nov</option>
-                    <option value="12">Dec</option>
-                    </select><br>
-            </div> -->
+                    <option value="January">Jan</option>
+                    <option value="February">Feb</option>
+                    <option value="March">Mar</option>
+                    <option value="April">Apr</option>
+                    <option value="May">May</option>
+                    <option value="June">Jun</option>
+                    <option value="July">Jul</option>
+                    <option value="August">Aug</option>
+                    <option value="September">Sep</option>
+                    <option value="Octomber">Oct</option>
+                    <option value="November">Nov</option>
+                    <option value="December">Dec</option>
+                </select><br>
+            </div> 
         </div>
+
+        <div class="dropdown" id = "dropdown">
+            <button class="popupTextBox" id="select_days">Select Day(s)</button>
+            <div id = "monthView" class="dropdown-content">
+
+            </div>
+        </div>
+
+        <div id = "day_div" class="dropdown">
+            <!-- <label for="day">Day</label> -->
+            <button class="popupTextBox" id="select_custom_days">Select Day(s)</button>
+            <div class="dropdown-content-days" id = "customDays">
+
+            </div>
+            <!-- <select name="day" id="week_day" class="popupTextBox">
+                <option value="1">Mon</option>
+                <option value="2">Tue</option>
+                <option value="3">Wed</option>
+                <option value="4">Thu</option>
+                <option value="5">Fri</option>
+                <option value="6">Sat</option>
+                <option value="7">Sun</option>
+                </select><br> -->
+        </div> 
 
         </div>
         <button id = "event_form_button" class="button">Add</button>

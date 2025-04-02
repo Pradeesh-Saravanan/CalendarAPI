@@ -62,5 +62,9 @@ Struts based Calendar API
 - Secured the API calls by using JWT token with username as the subject
 - Created dynamic UI for repeat events 
 
+# 02/04/2025
+
+- Made changes to the UI for CRUD operations on schedule
+- Working on schedule edit page 
 
 Note : To solve the inputName error thrown by struts xml file use non static getter and setter for inputstream variable in action 

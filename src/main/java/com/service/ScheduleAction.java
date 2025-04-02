@@ -59,8 +59,8 @@ public class ScheduleAction extends ActionSupport{
 		}
 	}
 	
-	private static Map<String,String> encodeDay = Map.of("Monday","1","Tuesday","2","Wednesday","3","Thursday","4","Friday","5","Saturday","6","Sunday","0");
-	private static Map<String,String> decodeDay = Map.of("1","MONDAY","2","TUESDAY","3","WEDNESDAY","4","THURSDAY","5","FRIDAY","6","SATURDAY","0","SUNDAY");
+	private static Map<String,String> encodeDay = Map.of("Monday","1","Tuesday","2","Wednesday","3","Thursday","4","Friday","5","Saturday","6","Sunday","7","Day","8");
+	private static Map<String,String> decodeDay = Map.of("1","MONDAY","2","TUESDAY","3","WEDNESDAY","4","THURSDAY","5","FRIDAY","6","SATURDAY","7","SUNDAY");
 	
 	private static Map<String,String> encodeWeek = Map.of("First","1","Second","2","Third","3","Fourth","4","Fifth","5","Last","6");
 	
@@ -77,8 +77,9 @@ public class ScheduleAction extends ActionSupport{
 			System.out.println(builder.toString());
 			schedule.setDay(builder.toString());
 		}
-		schedule.setWeek(encodeWeek.get(schedule.getWeek()));
-		
+		if(schedule.getWeek()!=null) {
+			schedule.setWeek(encodeWeek.get(schedule.getWeek()));
+		}
 		return schedule;
 	}
 	public String doPost() throws IOException {
@@ -457,7 +458,7 @@ public class ScheduleAction extends ActionSupport{
 		}
 		
 		if("monthly".equals(schedule.getFrequency())) {
-			String[] dateArray = schedule.getDate().split(",");
+		
 			System.out.println("Type at first: "+schedule.getWeek());
 			LocalDateTime newStart = startDate;
 			
@@ -479,6 +480,7 @@ public class ScheduleAction extends ActionSupport{
 					schedule.getScheduleId()));
 			
 			if(schedule.getDate()!=null && schedule.getWeek()==null) {
+				String[] dateArray = schedule.getDate().split(",");
 				while(!newStart.isAfter(yearEnd)) {
 					for(String date:dateArray) {
 						LocalDateTime newDate = newStart.withDayOfMonth(Integer.parseInt(date));
@@ -514,66 +516,118 @@ public class ScheduleAction extends ActionSupport{
 				return recurringSchedules;
 			}
 			if(schedule.getWeek()!=null) {
-				while(!newStart.isAfter(yearEnd)) {
-					LocalDate newDate = newStart.toLocalDate();
-				    while (newDate.getDayOfWeek() != DayOfWeek.of(Integer.parseInt(schedule.getDay().split(",")[0]))) {
-				        newDate = newDate.plusDays(1);
-				    }
-					LocalDateTime newDateTime = newDate.atTime(newStart.toLocalTime());
-					if(newDateTime.isAfter(yearEnd)) {
-						break;
-					}
-					String type = schedule.getWeek();
-					if(type.equals("1")) {
-						
-					}
-					else if(type.equals("2")) {
-						newDateTime = newDateTime.plusWeeks(1);
-					}
-					else if(type.equals("3")) {
-						newDateTime = newDateTime.plusWeeks(2);
-					}
-					else if(type.equals("4")) {
-						 newDateTime =newDateTime.plusWeeks(3);
-					}
-					else if(type.equals("5")) {
-						 newDateTime = newDateTime.plusWeeks(4);
-					}
-					
-					if (type.equals("6")) {
-					    YearMonth yearMonth = YearMonth.from(newStart);
-					    LocalDate lastDayOfMonth = yearMonth.atEndOfMonth();
-					    while (lastDayOfMonth.getDayOfWeek() != DayOfWeek.of(Integer.parseInt(schedule.getDay().split(",")[0]))) {
-					        lastDayOfMonth = lastDayOfMonth.minusDays(1);
-					    }
-					    newDateTime = lastDayOfMonth.atTime(newStart.toLocalTime());
-					}
-					if(newDateTime.getMonthValue()>newStart.getMonthValue()) {
+				if(schedule.getDay().split(",")[0].equals("8")) {
+					while(!newStart.isAfter(yearEnd)) {
+//						System.out.println("Day:"+schedule.getDay().split(",")[0].equals("8"));
+						LocalDateTime newDate = newStart;
+						String type = schedule.getWeek();
+						System.out.println("New date"+newDate +" "+type);
+						if(type.equals("1")) {
+							newDate = newStart.withDayOfMonth(1);
+						}
+						else if(type.equals("2")) {
+							newDate = newStart.withDayOfMonth(2);
+						}
+						else if(type.equals("3")) {
+							newDate = newStart.withDayOfMonth(3);
+						}
+						else if(type.equals("4")) {
+							newDate = newStart.withDayOfMonth(4);
+						}
+						else if(type.equals("5")) {
+							newDate = newStart.withDayOfMonth(5);
+						}
+						else if(type.equals("6")) {
+							YearMonth yearMonth = YearMonth.from(newStart);
+							newStart = yearMonth.atEndOfMonth().atTime(newStart.toLocalTime());
+						}
+						if(newDate.isAfter(yearEnd)) {
+							break;
+						}
+
+						recurringSchedules.add(new Schedule(schedule.getCalendarId(),
+								schedule.getTitle(),
+								schedule.getDescription(),
+								schedule.isAllDay(),
+								newDate.toString().replace("T"," "),
+								newDate.plus(duration,ChronoUnit.MILLIS).toString().replace("T"," "),
+								schedule.isRecurring(),
+								schedule.getFrequency(),
+								schedule.getRepeatInterval(),
+								schedule.getDay(),
+								schedule.getDate(),
+								schedule.getWeek(),
+								schedule.getMonth(),
+								schedule.getOffset(),
+								schedule.getScheduleId()));
+						System.out.println(newDate);
 						newStart = newStart.plusMonths(interval);
-						continue;
 					}
-					recurringSchedules.add(new Schedule(schedule.getCalendarId(),
-							schedule.getTitle(),
-							schedule.getDescription(),
-							schedule.isAllDay(),
-							newDateTime.toString().replace("T"," "),
-							newDateTime.plus(duration,ChronoUnit.MILLIS).toString().replace("T"," "),
-							schedule.isRecurring(),
-							schedule.getFrequency(),
-							schedule.getRepeatInterval(),
-							schedule.getDay(),
-							schedule.getDate(),
-							schedule.getWeek(),
-							schedule.getMonth(),
-							schedule.getOffset(),
-							schedule.getScheduleId()));
-					System.out.println(newDateTime);
-					newStart = newStart.plusMonths(interval);
+					System.out.println("populated monthly...");
+					return recurringSchedules;
 				}
-				System.out.println("populated monthly...");
-				return recurringSchedules;
+				else {
+					while(!newStart.isAfter(yearEnd)) {
+						LocalDate newDate = newStart.toLocalDate();
+					    while (newDate.getDayOfWeek() != DayOfWeek.of(Integer.parseInt(schedule.getDay().split(",")[0]))) {
+					        newDate = newDate.plusDays(1);
+					    }
+						LocalDateTime newDateTime = newDate.atTime(newStart.toLocalTime());
+						if(newDateTime.isAfter(yearEnd)) {
+							break;
+						}
+						String type = schedule.getWeek();
+						if(type.equals("1")) {
+							
+						}
+						else if(type.equals("2")) {
+							newDateTime = newDateTime.plusWeeks(1);
+						}
+						else if(type.equals("3")) {
+							newDateTime = newDateTime.plusWeeks(2);
+						}
+						else if(type.equals("4")) {
+							 newDateTime =newDateTime.plusWeeks(3);
+						}
+						else if(type.equals("5")) {
+							 newDateTime = newDateTime.plusWeeks(4);
+						}
+						
+						if (type.equals("6")) {
+								YearMonth yearMonth = YearMonth.from(newStart);
+								LocalDate lastDayOfMonth = yearMonth.atEndOfMonth();
+								while (lastDayOfMonth.getDayOfWeek() != DayOfWeek.of(Integer.parseInt(schedule.getDay().split(",")[0]))) {
+									lastDayOfMonth = lastDayOfMonth.minusDays(1);
+								}
+								newDateTime = lastDayOfMonth.atTime(newStart.toLocalTime());
+						}
+						if(newDateTime.getMonthValue()>newStart.getMonthValue()) {
+							newStart = newStart.plusMonths(interval);
+							continue;
+						}
+						recurringSchedules.add(new Schedule(schedule.getCalendarId(),
+								schedule.getTitle(),
+								schedule.getDescription(),
+								schedule.isAllDay(),
+								newDateTime.toString().replace("T"," "),
+								newDateTime.plus(duration,ChronoUnit.MILLIS).toString().replace("T"," "),
+								schedule.isRecurring(),
+								schedule.getFrequency(),
+								schedule.getRepeatInterval(),
+								schedule.getDay(),
+								schedule.getDate(),
+								schedule.getWeek(),
+								schedule.getMonth(),
+								schedule.getOffset(),
+								schedule.getScheduleId()));
+						System.out.println(newDateTime);
+						newStart = newStart.plusMonths(interval);
+					}
+					System.out.println("populated monthly...");
+					return recurringSchedules;
+				}
+//				return recurringSchedules;
 			}
-			return recurringSchedules;
 		}
 		
 		if("yearly".equals(schedule.getFrequency())) {
@@ -621,64 +675,118 @@ public class ScheduleAction extends ActionSupport{
 				return recurringSchedules;
 			}
 			if(schedule.getWeek()!=null) {
-				while(!newStart.isAfter(yearEnd)) {
-					LocalDate newDate = newStart.toLocalDate().with(Month.valueOf(schedule.getMonth().toUpperCase()));
-				    while (newDate.getDayOfWeek() != DayOfWeek.of(Integer.parseInt(schedule.getDay().split(",")[0]))) {
-				        newDate = newDate.plusDays(1);
-				    }
-					LocalDateTime newDateTime = newDate.atTime(newStart.toLocalTime());
-					if(newDateTime.isAfter(yearEnd)) {
-						break;
+				if(schedule.getDay().split(",")[0].equals("8")) {
+					newStart = newStart.toLocalDate().with(Month.valueOf(schedule.getMonth().toUpperCase())).atTime(newStart.toLocalTime());
+					while(!newStart.isAfter(yearEnd)) {
+//						System.out.println("Day:"+schedule.getDay().split(",")[0].equals("8"));
+						LocalDateTime newDate = newStart;
+						String type = schedule.getWeek();
+						System.out.println("New date"+newDate +" "+type);
+						if(type.equals("1")) {
+							newDate = newStart.withDayOfMonth(1);
+						}
+						else if(type.equals("2")) {
+							newDate = newStart.withDayOfMonth(2);
+						}
+						else if(type.equals("3")) {
+							newDate = newStart.withDayOfMonth(3);
+						}
+						else if(type.equals("4")) {
+							newDate = newStart.withDayOfMonth(4);
+						}
+						else if(type.equals("5")) {
+							newDate = newStart.withDayOfMonth(5);
+						}
+						else if(type.equals("6")) {
+							YearMonth yearMonth = YearMonth.from(newStart);
+							newStart = yearMonth.atEndOfMonth().atTime(newStart.toLocalTime());
+						}
+						if(newDate.isAfter(yearEnd)) {
+							break;
+						}
+
+						recurringSchedules.add(new Schedule(schedule.getCalendarId(),
+								schedule.getTitle(),
+								schedule.getDescription(),
+								schedule.isAllDay(),
+								newDate.toString().replace("T"," "),
+								newDate.plus(duration,ChronoUnit.MILLIS).toString().replace("T"," "),
+								schedule.isRecurring(),
+								schedule.getFrequency(),
+								schedule.getRepeatInterval(),
+								schedule.getDay(),
+								schedule.getDate(),
+								schedule.getWeek(),
+								schedule.getMonth(),
+								schedule.getOffset(),
+								schedule.getScheduleId()));
+						System.out.println(newDate);
+						newStart = getYearlyInterval(newStart,schedule.getRepeatInterval());
 					}
-					String type = schedule.getWeek();
-					if(type.equals("1")) {
-						
-					}
-					else if(type.equals("2")) {
-						newDateTime = newDateTime.plusWeeks(1);
-					}
-					else if(type.equals("3")) {
-						newDateTime = newDateTime.plusWeeks(2);
-					}
-					else if(type.equals("4")) {
-						 newDateTime =newDateTime.plusWeeks(3);
-					}
-					else if(type.equals("5")) {
-						 newDateTime = newDateTime.plusWeeks(4);
-					}
-					
-					if (type.equals("6")) {
-					    YearMonth yearMonth = YearMonth.from(newStart);
-					    LocalDate lastDayOfMonth = yearMonth.atEndOfMonth();
-					    while (lastDayOfMonth.getDayOfWeek() != DayOfWeek.of(Integer.parseInt(schedule.getDay().split(",")[0]))) {
-					        lastDayOfMonth = lastDayOfMonth.minusDays(1);
-					    }
-					    newDateTime = lastDayOfMonth.atTime(newStart.toLocalTime());
-					}
-					if(newDateTime.getMonthValue()>newStart.getMonthValue()) {
-						newStart = getYearlyInterval(newStart,interval);
-						continue;
-					}
-					recurringSchedules.add(new Schedule(schedule.getCalendarId(),
-							schedule.getTitle(),
-							schedule.getDescription(),
-							schedule.isAllDay(),
-							newDateTime.toString().replace("T"," "),
-							newDateTime.plus(duration,ChronoUnit.MILLIS).toString().replace("T"," "),
-							schedule.isRecurring(),
-							schedule.getFrequency(),
-							schedule.getRepeatInterval(),
-							schedule.getDay(),
-							schedule.getDate(),
-							schedule.getWeek(),
-							schedule.getMonth(),
-							schedule.getOffset(),
-							schedule.getScheduleId()));
-					System.out.println(newDateTime);
-					newStart = getYearlyInterval(newStart,interval);
+					System.out.println("populated monthly...");
+					return recurringSchedules;
 				}
-				System.out.println("populated yearly...");
-				return recurringSchedules;
+				else {
+					while(!newStart.isAfter(yearEnd)) {
+						LocalDate newDate = newStart.toLocalDate().with(Month.valueOf(schedule.getMonth().toUpperCase()));
+					    while (newDate.getDayOfWeek() != DayOfWeek.of(Integer.parseInt(schedule.getDay().split(",")[0]))) {
+					        newDate = newDate.plusDays(1);
+					    }
+						LocalDateTime newDateTime = newDate.atTime(newStart.toLocalTime());
+						if(newDateTime.isAfter(yearEnd)) {
+							break;
+						}
+						String type = schedule.getWeek();
+						if(type.equals("1")) {
+							
+						}
+						else if(type.equals("2")) {
+							newDateTime = newDateTime.plusWeeks(1);
+						}
+						else if(type.equals("3")) {
+							newDateTime = newDateTime.plusWeeks(2);
+						}
+						else if(type.equals("4")) {
+							 newDateTime =newDateTime.plusWeeks(3);
+						}
+						else if(type.equals("5")) {
+							 newDateTime = newDateTime.plusWeeks(4);
+						}
+						
+						if (type.equals("6")) {
+	
+								YearMonth yearMonth = YearMonth.from(newStart);
+								LocalDate lastDayOfMonth = yearMonth.atEndOfMonth();
+								while (lastDayOfMonth.getDayOfWeek() != DayOfWeek.of(Integer.parseInt(schedule.getDay().split(",")[0]))) {
+									lastDayOfMonth = lastDayOfMonth.minusDays(1);
+								}
+								newDateTime = lastDayOfMonth.atTime(newStart.toLocalTime());
+						}
+						if(newDateTime.getMonthValue()>newStart.getMonthValue()) {
+							newStart = getYearlyInterval(newStart,interval);
+							continue;
+						}
+						recurringSchedules.add(new Schedule(schedule.getCalendarId(),
+								schedule.getTitle(),
+								schedule.getDescription(),
+								schedule.isAllDay(),
+								newDateTime.toString().replace("T"," "),
+								newDateTime.plus(duration,ChronoUnit.MILLIS).toString().replace("T"," "),
+								schedule.isRecurring(),
+								schedule.getFrequency(),
+								schedule.getRepeatInterval(),
+								schedule.getDay(),
+								schedule.getDate(),
+								schedule.getWeek(),
+								schedule.getMonth(),
+								schedule.getOffset(),
+								schedule.getScheduleId()));
+						System.out.println(newDateTime);
+						newStart = getYearlyInterval(newStart,interval);
+					}
+					System.out.println("populated yearly...");
+					return recurringSchedules;
+				}
 			}
 		}
 		
