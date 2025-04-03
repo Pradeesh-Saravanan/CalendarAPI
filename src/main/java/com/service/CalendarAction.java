@@ -20,10 +20,13 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.struts2.ServletActionContext;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import com.google.gson.Gson;
-import com.model.Calendar;
-import com.model.Database;
 import com.opensymphony.xwork2.ActionSupport;
+import com.utils.Calendar;
+import com.utils.Database;
 
 public class CalendarAction extends ActionSupport {
 
@@ -31,6 +34,7 @@ public class CalendarAction extends ActionSupport {
 	private final String ORIGIN_STRING = "http://127.0.0.1:5501";
 	private Map<String,String> map = new HashMap<>();
 	private String user_id = "";
+	private String user;
 	private InputStream inputStream;
 	public void doOptions(HttpServletRequest request,HttpServletResponse response) {
 		response.setHeader("Access-Control-Allow-Origin",ORIGIN_STRING);
@@ -53,12 +57,25 @@ public class CalendarAction extends ActionSupport {
 		response.setHeader("Access-Control-Allow-Methods","GET,POST,DELETE,PUT,OPTIONS");
 		response.setHeader("Access-Control-Allow-Credentials","true");
 		response.setHeader("Access-Control-Allow-Header","Content-Type,Authorization");
-		response.setStatus(HttpServletResponse.SC_OK);
+		String authHeader = request.getHeader("Authorization");
+		if(authHeader!=null && authHeader.startsWith("Bearer ")) {
+			String token = authHeader.substring(7);
+			Algorithm algorithm = Algorithm.HMAC256("secretKey");
+			DecodedJWT decoded = JWT.require(algorithm).build().verify(token);
+			setUser(decoded.getSubject());
+		}
+		else {
+			map.put("status","failed");
+			map.put("message","Auth token error");
+			Gson gson = new Gson();
+			inputStream = new ByteArrayInputStream(gson.toJson(map).getBytes(StandardCharsets.UTF_8));
+			return ERROR;
+		}
 		
 		try(Connection conn = Database.getConnection()){
 			String user_query = "select user_id from users where username = ?";
 			PreparedStatement stmt = conn.prepareStatement(user_query);
-			stmt.setString(1,request.getParameter("user"));
+			stmt.setString(1,getUser());
 			ResultSet rs = stmt.executeQuery();
 			if(rs.next()) {
 				user_id = rs.getString("user_id");
@@ -107,6 +124,20 @@ public class CalendarAction extends ActionSupport {
 		response.setHeader("Access-Control-Allow-Credentials","true");
 		response.setHeader("Access-Control-Allow-Headers","Content-Type,Authorization");
 		
+		String authHeader = request.getHeader("Authorization");
+		if(authHeader!=null && authHeader.startsWith("Bearer ")) {
+			String token = authHeader.substring(7);
+			Algorithm algorithm = Algorithm.HMAC256("secretKey");
+			DecodedJWT decoded = JWT.require(algorithm).build().verify(token);
+			setUser(decoded.getSubject());
+		}
+		else {
+			map.put("status","failed");
+			map.put("message","Auth token error");
+			Gson gson = new Gson();
+			inputStream = new ByteArrayInputStream(gson.toJson(map).getBytes(StandardCharsets.UTF_8));
+			return ERROR;
+		}
 		BufferedReader reader = new BufferedReader(new InputStreamReader(request.getInputStream()));
 		StringBuilder sb = new StringBuilder();
 		String line = "";
@@ -119,7 +150,8 @@ public class CalendarAction extends ActionSupport {
 		try(Connection conn = Database.getConnection()){
 			String user_query = "select user_id from users where username = ?";
 			PreparedStatement stmt = conn.prepareStatement(user_query);
-			stmt.setString(1,request.getParameter("user"));
+			stmt.setString(1,getUser());
+			System.out.println(getUser());
 			ResultSet rs = stmt.executeQuery();
 			if(rs.next()) {
 				user_id = rs.getString("user_id");
@@ -169,10 +201,25 @@ public class CalendarAction extends ActionSupport {
 		response.setHeader("Access-Control-Allow-Credentials","true");
 		System.out.println("Calendar API is running....");
 		
+		String authHeader = request.getHeader("Authorization");
+		if(authHeader!=null && authHeader.startsWith("Bearer ")) {
+			String token = authHeader.substring(7);
+			Algorithm algorithm = Algorithm.HMAC256("secretKey");
+			DecodedJWT decoded = JWT.require(algorithm).build().verify(token);
+			setUser(decoded.getSubject());
+		}
+		else {
+			map.put("status","failed");
+			map.put("message","Auth token error");
+			Gson gson = new Gson();
+			inputStream = new ByteArrayInputStream(gson.toJson(map).getBytes(StandardCharsets.UTF_8));
+			return ERROR;
+		}
+		
 		try(Connection conn = Database.getConnection()){
 			String user_query = "select user_id from users where username = ?";
 			PreparedStatement stmt = conn.prepareStatement(user_query);
-			stmt.setString(1,request.getParameter("user"));
+			stmt.setString(1,getUser());
 			ResultSet rs = stmt.executeQuery();
 			if(rs.next()) {
 				String user_id = rs.getString("user_id");
@@ -227,6 +274,20 @@ public class CalendarAction extends ActionSupport {
 		response.setHeader("Access-Control-Allow-Methods","GET,POST,PUT,DELETE,OPTIONS");
 		System.out.println("Calendar API running.....");
 		
+		String authHeader = request.getHeader("Authorization");
+		if(authHeader!=null && authHeader.startsWith("Bearer ")) {
+			String token = authHeader.substring(7);
+			Algorithm algorithm = Algorithm.HMAC256("secretKey");
+			DecodedJWT decoded = JWT.require(algorithm).build().verify(token);
+			setUser(decoded.getSubject());
+		}
+		else {
+			map.put("status","failed");
+			map.put("message","Auth token error");
+			Gson gson = new Gson();
+			inputStream = new ByteArrayInputStream(gson.toJson(map).getBytes(StandardCharsets.UTF_8));
+			return ERROR;
+		}
 		BufferedReader reader = new BufferedReader(new InputStreamReader(request.getInputStream()));
 		StringBuilder sb = new StringBuilder();
 		String line = "";
@@ -242,13 +303,14 @@ public class CalendarAction extends ActionSupport {
 			
 			String user_query = "select * from users where username = ?";
 			PreparedStatement stmt = connection.prepareStatement(user_query);
-			stmt.setString(1,request.getParameter("user"));
-
+			stmt.setString(1,getUser());
+			
 			ResultSet rs = stmt.executeQuery();
 			
 			if(rs.next()) {
 				
 				user_id = rs.getString("user_id");
+				System.out.println(user_id);
 				String query = "insert into calendars(user_id,calendar_name,description,created_at) values(?,?,?,now());";
 				stmt = connection.prepareStatement(query);
 				stmt.setString(1,user_id);
@@ -277,6 +339,14 @@ public class CalendarAction extends ActionSupport {
 	}
 	public void setInputStream(InputStream inputStream) {
 		this.inputStream = inputStream;
+	}
+
+	public String getUser() {
+		return user;
+	}
+
+	public void setUser(String user) {
+		this.user = user;
 	}
 	
 }

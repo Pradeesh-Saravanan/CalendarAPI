@@ -22,20 +22,19 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.google.gson.Gson;
-import com.model.Database;
-import com.model.User;
 import com.opensymphony.xwork2.ActionSupport;
+import com.utils.Database;
+import com.utils.User;
 
 public class LoginJWT extends ActionSupport{
 	private final String ORIGIN_STRING = "http://127.0.0.1:5501";
 	private Map<String,String> map =new HashMap<>();
-	private InputStream responseData;
+	private InputStream responseData = new ByteArrayInputStream("NULL".getBytes());
 	private Connection connection;
 
 	private static final long serialVersionUID = 7730398943265126114L;
 	public void doOptions(HttpServletRequest request,HttpServletResponse response) {
 		response.setHeader("Access-Control-Allow-Origin",ORIGIN_STRING);
-        response.setHeader("Access-Control-Allow-Credentials", "true");
 	    	response.setHeader("Access-Control-Allow-Methods","GET,OPTIONS,POST");
 	    	response.setHeader("Access-Control-Allow-Headers","Content-Type, Authorization");
 	    	response.setStatus(HttpServletResponse.SC_OK);
@@ -49,65 +48,18 @@ public class LoginJWT extends ActionSupport{
 			e.printStackTrace();
 		}
 	}
-	public String doGet() throws IOException {
+
+	public String post_login() throws IOException {
+		System.out.println("running login");
 		HttpServletRequest request = ServletActionContext.getRequest();
 		HttpServletResponse response= ServletActionContext.getResponse();
 		
-		if("OPTIONS".equals(request.getMethod())) {
-			doOptions(request,response);
-			return NONE;
-		}
-		response.setHeader("Access-Control-Allow-Origin",ORIGIN_STRING);
-        response.setHeader("Access-Control-Allow-Credentials", "true");
-	    	response.setHeader("Access-Control-Allow-Methods","GET,OPTIONS,POST");
-	    	response.setHeader("Access-Control-Allow-Headers","Content-Type, Authorization");
-	    	
-	    	Gson gson = new Gson();
-	    	
-	    	String authHeader = request.getHeader("Authorization");
-		System.out.println("Authentication get method is active "+authHeader);
-		if(authHeader!=null && authHeader.startsWith("Bearer ")) {
-			String token = authHeader.substring(7);
-			try {
-				Algorithm algorithm = Algorithm.HMAC256("secretKey");
-				DecodedJWT decodedJWT = JWT.require(algorithm).build().verify(token);
-		        
-		        String user = decodedJWT.getSubject();
-			    	
-			    	map.put("status","success");
-			    	map.put("message","Lazy login success");
-			    	map.put("user",user);
-			    	responseData = new ByteArrayInputStream(gson.toJson(map).getBytes());
-			    	return SUCCESS;
-			}
-			catch(Exception e) {
-				e.printStackTrace();
-				response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-				map.put("status","error");
-			    	map.put("message","Unable to verify token");
-			    	responseData = new ByteArrayInputStream(gson.toJson(map).getBytes());
-			    	return SUCCESS;
-			}
-		}
-		else {
-			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-			map.put("status","error");
-		    	map.put("message","No token found");
-		    	responseData = new ByteArrayInputStream(gson.toJson(map).getBytes());
-		    	return SUCCESS;
-		}
-	}
-	public String doPost() throws IOException {
-		HttpServletRequest request = ServletActionContext.getRequest();
-		HttpServletResponse response= ServletActionContext.getResponse();
-		
-		if("OPTIONS".equals(request.getMethod())) {
-			doOptions(request,response);
-			return NONE;
-		}
+//		if("OPTIONS".equals(request.getMethod())) {
+//			doOptions(request,response);
+//			return NONE;
+//		}
 		
 		response.setHeader("Access-Control-Allow-Origin",ORIGIN_STRING);
-        response.setHeader("Access-Control-Allow-Credentials", "true");
 	    	response.setHeader("Access-Control-Allow-Methods","GET,OPTIONS,POST");
 	    	response.setHeader("Access-Control-Allow-Headers","Content-Type, Authorization");
 	    	
@@ -117,6 +69,7 @@ public class LoginJWT extends ActionSupport{
 	    	while((line=reader.readLine())!=null) {
 	    		builder.append(line);
 	    	}
+	    	System.out.println(builder.toString());
 	    	Gson gson = new Gson();
 	    User user = gson.fromJson(builder.toString(),User.class);	
 	    try {
@@ -165,6 +118,6 @@ public class LoginJWT extends ActionSupport{
 	}
 
 	public InputStream getResponseData() {
-		return responseData;
+		return this.responseData;
 	}
 }

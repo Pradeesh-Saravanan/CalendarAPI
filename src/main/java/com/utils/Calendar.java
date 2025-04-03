@@ -1,4 +1,4 @@
-package com.model;
+package com.utils;
 
 public class Calendar {
 	private String user_id;

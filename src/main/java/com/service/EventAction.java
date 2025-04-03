@@ -22,9 +22,9 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.struts2.ServletActionContext;
 
 import com.google.gson.Gson;
-import com.model.Database;
-import com.model.Event;
 import com.opensymphony.xwork2.ActionSupport;
+import com.utils.Database;
+import com.utils.Event;
 
 public class EventAction extends ActionSupport{
 

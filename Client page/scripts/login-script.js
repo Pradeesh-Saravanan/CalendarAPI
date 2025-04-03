@@ -5,23 +5,28 @@ const loginForm = document.getElementById("login-form");
         onload();
         async function onload() {
             const token = localStorage.getItem('token');
-            try {
-                const response = await fetch("http://localhost:8080/CalendarAPI/secured/login/get", {
-                    method: "GET",
-                    headers:{
-                        "Authorization":`Bearer ${token}`,
-                    } 
-                });
-                const raw = await response.text();
-                const data = JSON.parse(raw);
-                console.log(data.status);
-                if (response.ok || data.status === "success") {
-                    // console.log(data.user);
-                    window.location.href = `calendar.html?user=${data.user}`;
-                }
-            } catch (error) {
-                // showError(error.message);
+            if(token){
+                window.location.href="calendar.html";
+                return;
             }
+
+            // try {
+            //     const response = await fetch("http://localhost:8080/CalendarAPI/secured/login/get", {
+            //         method: "GET",
+            //         headers:{
+            //             "Authorization":`Bearer ${token}`,
+            //         } 
+            //     });
+            //     const raw = await response.text();
+            //     const data = JSON.parse(raw);
+            //     console.log(data.status);
+            //     if (response.ok || data.status === "success") {
+            //         // console.log(data.user);
+            //         window.location.href = `calendar.html?user=${data.user}`;
+            //     }
+            // } catch (error) {
+            //     // showError(error.message);
+            // }
         }
         loginForm.addEventListener("submit", async (event) => {
             event.preventDefault();
@@ -42,12 +47,11 @@ const loginForm = document.getElementById("login-form");
             errorMessage.textContent = "";
 
             try {
-                const response = await fetch("http://localhost:8080/CalendarAPI/login/post", {
+                const response = await fetch("http://localhost:8080/CalendarAPI/login", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json"
                     },
-                    credentials: "include", 
                     body: JSON.stringify(credentials)
                 });
                 const raw = await response.text();
@@ -59,7 +63,7 @@ const loginForm = document.getElementById("login-form");
                     // alert(data.token);
                     if(data.token){
                         localStorage.setItem("token",data.token);
-                        window.location.href = `calendar.html?user=${user}`;
+                        window.location.href = `calendar.html`;
                     }
                     else{
                         console.log("empty token")

@@ -12,7 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
-import com.model.JwtUtil;
+import com.utils.JwtUtil;
 
 public class JwtAuthenticationFilter implements Filter{
 	private static String ORIGIN_STRING = "http://127.0.0.1:5501";

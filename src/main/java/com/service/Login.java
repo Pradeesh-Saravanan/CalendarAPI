@@ -20,10 +20,10 @@ import org.apache.struts2.ServletActionContext;
 import org.mindrot.jbcrypt.BCrypt;
 
 import com.google.gson.Gson;
-import com.model.Database;
-import com.model.JwtUtil;
-import com.model.User;
 import com.opensymphony.xwork2.ActionSupport;
+import com.utils.Database;
+import com.utils.JwtUtil;
+import com.utils.User;
 
 public class Login extends ActionSupport{
 	private final String ORIGIN_STRING = "http://127.0.0.1:5501";

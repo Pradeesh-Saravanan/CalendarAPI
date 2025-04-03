@@ -12,8 +12,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.model.Database;
-import com.model.Event;
+import com.utils.Database;
+import com.utils.Event;
 
 public class Recurrence {
 	

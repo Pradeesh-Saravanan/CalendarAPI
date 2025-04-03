@@ -98,11 +98,12 @@ function openSidebar() {
     };
     console.log(calendar);  
     try{
-        const response = await fetch(`http://localhost:8080/CalendarAPI/secured/calendar/post?user=${user}`,
+        const response = await fetch(`http://localhost:8080/CalendarAPI/calendar/post`,
             {
                 method:"POST",
                headers:{
-                "Content-Type":"application/json"
+                "Content-Type":"application/json",
+                "Authorization":`Bearer ${token}`,
                },
                body:JSON.stringify(calendar)
             }
@@ -111,11 +112,13 @@ function openSidebar() {
         if(!response.status===401){
             alert("Unauthorized");
             window.location.href="login.html";
+
         }
         const raw = await response.text();
         const data = JSON.parse(raw);
         console.log(data.status);
         if (response.ok || data.status === "success") {
+            popupOverlay.style.display = 'none';
            fetchCalendars();
         } else {
             throw new Error(data.message || "Failed. Please try again.");
@@ -134,7 +137,7 @@ function openSidebar() {
         return;
     }
     try {
-        const response = await fetch(`http://localhost:8080/CalendarAPI/secured/calendar/get?user=${user}`,
+        const response = await fetch(`http://localhost:8080/CalendarAPI/calendar/get`,
             {
                 method:"GET",
                 headers:{
@@ -142,9 +145,9 @@ function openSidebar() {
                 }
             }
         );
-        if(!response.status===401 || !response.ok){
-        window.location.href="login.html";
-        }
+    if(!response.status===401 || !response.ok){
+    window.location.href="login.html";
+    }
     const raw = await response.text()
     const data = JSON.parse(raw)
     if(first_time==false){
@@ -160,6 +163,7 @@ function openSidebar() {
         list.appendChild(row);
     });
     } catch (error) {
+        alert(error);
         window.location.href="login.html";
         console.error("Error fetching posts:", error);
     }
@@ -646,7 +650,7 @@ async function addEvent(year_in,month_in,day_in,URL){
         console.log("package: ",package);
         // return;
         try{
-            const response = await fetch(`http://localhost:8080/CalendarAPI/secured/schedule/post?user=${user}`,
+            const response = await fetch(`http://localhost:8080/CalendarAPI/schedule/post`,
                 {
                     method:"POST",
                 headers:{
@@ -782,7 +786,7 @@ async function editCalendar(id,name,description){
             //     body:JSON.stringify(calendar)
             //     }
             // );
-            const response = await fetch(`http://localhost:8080/CalendarAPI/secured/calendar/put?user=${user}`,
+            const response = await fetch(`http://localhost:8080/CalendarAPI/calendar/put?`,
                 {
                     method:"PUT",
                     headers:{
@@ -793,7 +797,7 @@ async function editCalendar(id,name,description){
                 }
             );
             if(!response.status===401 || !response.ok){
-            window.location.href="login.html";
+                window.location.href="login.html";
             }
             const raw = await response.text();
             const data = JSON.parse(raw);
@@ -823,7 +827,7 @@ async function fetchEvents() {
         const list = document.getElementById("event_list");
         list.innerHTML = ``;
         // const response = await fetch(`${API_URL}event/get?user=${user}&calendar_id=${calendar_id}`);
-        const response = await fetch(`http://localhost:8080/CalendarAPI/secured/schedule/get?user=${user}`,
+        const response = await fetch(`http://localhost:8080/CalendarAPI/schedule/get`,
             {
                 method:"POST",
                 headers:{
@@ -1123,7 +1127,7 @@ async function editEvent(title,start_time){
         }
         console.log("package: ",package);
         try{
-            const response = await fetch(`http://localhost:8080/CalendarAPI/secured/schedule/put?user=${user}`,
+            const response = await fetch(`http://localhost:8080/CalendarAPI/schedule/put`,
                 {
                     method:"POST",
                     headers:{
@@ -1176,7 +1180,7 @@ async function deleteEvent(schedule_id){
             "schedule_id":schedule_id
         };
         // const response = await fetch(`http://localhost:8080/CalendarAPI/event/delete?user=${user}&name=${title}`);
-        const response = await fetch(`http://localhost:8080/CalendarAPI/secured/schedule/delete?user=${user}`,
+        const response = await fetch(`http://localhost:8080/CalendarAPI/schedule/delete`,
             {
                 method:"DELETE",
                 headers:{

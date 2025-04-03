@@ -22,9 +22,9 @@ import org.apache.struts2.ServletActionContext;
 import org.mindrot.jbcrypt.*;
 
 import com.google.gson.*;
-import com.model.Database;
-import com.model.User;
-import com.opensymphony.xwork2.ActionSupport;	
+import com.opensymphony.xwork2.ActionSupport;
+import com.utils.Database;
+import com.utils.User;	
 
 public class Registration extends ActionSupport {
 	private static final long serialVersionUID = -5926468460905343227L;

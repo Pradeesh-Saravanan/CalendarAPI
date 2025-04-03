@@ -67,4 +67,18 @@ Struts based Calendar API
 - Made changes to the UI for CRUD operations on schedule
 - Working on schedule edit page 
 
+# 03/04/2025 
+
+- Replaced authentication filters in web.xml with struts interceptors 
+- Removed url parameters that are unused
+- Endpoint management for login action page and lazy login implementation
+- Fetching user data from token to avoid tampering endpoints
+- Managed endpoint flow within compact struts.xml resolving redundancy
+- Restructuring struts xml to have custom mapper class 
+- Compressing endpoints CRUD to work on single endpoint 
+- Created a custom rest mapper class that sets action method dynamically for each endpoint and it's request method 
+- Addition of jar files for rest => xwork-core, adm, struts-rest-plugin, xstream
+- Refactored com.model package to com.utils for naming convention
+- Dynamic method mapping works on login post and options method
+
 Note : To solve the inputName error thrown by struts xml file use non static getter and setter for inputstream variable in action 
