@@ -18,51 +18,28 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.struts2.ServletActionContext;
 import org.mindrot.jbcrypt.BCrypt;
 
+import com.auth.CORS;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.interfaces.DecodedJWT;
 import com.google.gson.Gson;
+import com.model.User;
 import com.opensymphony.xwork2.ActionSupport;
 import com.utils.Database;
-import com.utils.User;
 
 public class LoginJWT extends ActionSupport{
-	private final String ORIGIN_STRING = "http://127.0.0.1:5501";
 	private Map<String,String> map =new HashMap<>();
-	private InputStream responseData = new ByteArrayInputStream("NULL".getBytes());
-	private Connection connection;
+	private InputStream responseData = new ByteArrayInputStream("NULL".getBytes());	
 
 	private static final long serialVersionUID = 7730398943265126114L;
-	public void doOptions(HttpServletRequest request,HttpServletResponse response) {
-		response.setHeader("Access-Control-Allow-Origin",ORIGIN_STRING);
-	    	response.setHeader("Access-Control-Allow-Methods","GET,OPTIONS,POST");
-	    	response.setHeader("Access-Control-Allow-Headers","Content-Type, Authorization");
-	    	response.setStatus(HttpServletResponse.SC_OK);
-	}
-	
-	{
-		try {
-			connection = Database.getConnection();
-		}
-		catch(Exception e) {
-			e.printStackTrace();
-		}
-	}
 
-	public String post_login() throws IOException {
+
+	public String doPost() throws IOException {
 		System.out.println("running login");
 		HttpServletRequest request = ServletActionContext.getRequest();
 		HttpServletResponse response= ServletActionContext.getResponse();
-		
-//		if("OPTIONS".equals(request.getMethod())) {
-//			doOptions(request,response);
-//			return NONE;
-//		}
-		
-		response.setHeader("Access-Control-Allow-Origin",ORIGIN_STRING);
-	    	response.setHeader("Access-Control-Allow-Methods","GET,OPTIONS,POST");
-	    	response.setHeader("Access-Control-Allow-Headers","Content-Type, Authorization");
-	    	
+				
+		response = CORS.resolve(response);
+
 	    	BufferedReader reader = new BufferedReader(new InputStreamReader(request.getInputStream()));
 	    	StringBuilder builder = new StringBuilder();
 	    	String line = "";
@@ -72,7 +49,7 @@ public class LoginJWT extends ActionSupport{
 	    	System.out.println(builder.toString());
 	    	Gson gson = new Gson();
 	    User user = gson.fromJson(builder.toString(),User.class);	
-	    try {
+	    try (Connection connection = Database.getConnection()){
 	    		String query ="select * from users where username = ?";
 	    		PreparedStatement stmt = connection.prepareStatement(query);
 	    		stmt.setString(1,user.getUsername());
@@ -114,7 +91,7 @@ public class LoginJWT extends ActionSupport{
 		
 		Algorithm algorithm = Algorithm.HMAC256("secretKey");
 		
-		return JWT.create().withSubject(username).withExpiresAt(new Date(System.currentTimeMillis()+3600*1000)).sign(algorithm);
+		return JWT.create().withSubject(username).withExpiresAt(new Date(System.currentTimeMillis()+3600*24*1000)).sign(algorithm);
 	}
 
 	public InputStream getResponseData() {

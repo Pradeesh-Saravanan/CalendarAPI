@@ -12,7 +12,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -21,31 +20,38 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.struts2.ServletActionContext;
 import org.mindrot.jbcrypt.*;
 
+import com.auth.CORS;
 import com.google.gson.*;
+import com.model.User;
 import com.opensymphony.xwork2.ActionSupport;
-import com.utils.Database;
-import com.utils.User;	
+import com.utils.Database;	
 
 public class Registration extends ActionSupport {
 	private static final long serialVersionUID = -5926468460905343227L;
 	private static String jsonString;
-	private static InputStream inputStream;
-	protected void doOptions(HttpServletRequest request, HttpServletResponse response) throws ServletException,IOException{
-		response.setHeader("Access-Control-Allow-Origin", "*");
-		response.setHeader("Access-Control-Allow-Methods","POST,OPTIONS");
-		response.setHeader("Access-Control-Allow-Headers", "Content-Type, access-control-allow-methods");
-		response.setStatus(HttpServletResponse.SC_OK);
-	}
+	private static InputStream responseData;
+//	protected void doOptions(HttpServletRequest request, HttpServletResponse response) throws ServletException,IOException{
+//		response.setHeader("Access-Control-Allow-Origin", "*");
+//		response.setHeader("Access-Control-Allow-Methods","POST,OPTIONS");
+//		response.setHeader("Access-Control-Allow-Headers", "Content-Type, access-control-allow-methods");
+//		response.setStatus(HttpServletResponse.SC_OK);
+//	}
     public String doPost() throws ServletException, IOException, ClassNotFoundException {
        	HttpServletRequest request = ServletActionContext.getRequest();
         HttpServletResponse response = ServletActionContext.getResponse();
-		response.setHeader("Access-Control-Allow-Origin","*");
-		response.setHeader("Access-Control-Allow-Headers", "Content-Type,Authorization,access-control-allow-methods");
-		response.setHeader("Access-Control-Allow-Methods", "POST,OPTIONS");
-		if("OPTIONS".equals(request.getMethod()))
-		{
+//		response.setHeader("Access-Control-Allow-Origin","*");
+//		response.setHeader("Access-Control-Allow-Headers", "Content-Type,Authorization,access-control-allow-methods");
+//		response.setHeader("Access-Control-Allow-Methods", "POST,OPTIONS");
+//		if("OPTIONS".equals(request.getMethod()))
+//		{
+//			response.setStatus(HttpServletResponse.SC_OK);
+//			return null;
+//		}
+		
+        response = CORS.resolve(response);
+		if("OPTIONS".equals(request.getMethod())) {
 			response.setStatus(HttpServletResponse.SC_OK);
-			return null;
+			return NONE;
 		}
 		
 		BufferedReader reader = new BufferedReader(new InputStreamReader(request.getInputStream()));
@@ -66,7 +72,7 @@ public class Registration extends ActionSupport {
 					map.put("status", "failed");
 					map.put("message", "Username already exists");
 					jsonString = gson.toJson(map);
-					inputStream = new ByteArrayInputStream(jsonString.getBytes(StandardCharsets.UTF_8));
+					responseData = new ByteArrayInputStream(jsonString.getBytes(StandardCharsets.UTF_8));
 					return "json";
 				}
 				else {
@@ -81,7 +87,7 @@ public class Registration extends ActionSupport {
 						map.put("status", "success");
 						map.put("message","User added to database");
 						jsonString = gson.toJson(map);
-    					inputStream = new ByteArrayInputStream(jsonString.getBytes(StandardCharsets.UTF_8));
+    					responseData = new ByteArrayInputStream(jsonString.getBytes(StandardCharsets.UTF_8));
     					return "json";
     				}
 					catch(SQLException e) {
@@ -95,13 +101,7 @@ public class Registration extends ActionSupport {
 		}
 		return null;
 	}
-    public InputStream getInputStream() {
-        return inputStream;
-    }
-    public String getJsonString() {
-    	return jsonString;
-    }
-    public void setJsonString(String jsonString) {
-    	Registration.jsonString = jsonString;
+    public InputStream getResponseData() {
+        return responseData;
     }
 }

@@ -18,7 +18,6 @@ import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,39 +27,24 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.struts2.ServletActionContext;
 
+import com.auth.CORS;
 import com.google.gson.Gson;
+import com.model.Schedule;
 import com.opensymphony.xwork2.ActionSupport;
 import com.utils.Database;
-import com.utils.Schedule;
 
 public class ScheduleAction extends ActionSupport{
 
 	private static final long serialVersionUID = 7156203297401441841L;
-	private static String ORIGIN_STRING = "http://127.0.0.1:5501";
-	private static Connection connection;
 	private static Map<String,String> map = new HashMap<>();
 	private InputStream responseData = new ByteArrayInputStream("Null".getBytes());
 	public  InputStream getResponseData() {
 		return responseData;
 	}
-	public void doOptions(HttpServletRequest request,HttpServletResponse response) {
-		response.setHeader("Access-Control-Allow-Origin",ORIGIN_STRING);
-		response.setHeader("Access-Control-Allow-Methods","GET,POST,PUT,DELETE,OPTIONS");
-		response.setHeader("Access-Control-Allow-Headers","Content-Type, Authorization");
-		response.setStatus(HttpServletResponse.SC_OK);
-	}
-	
-	{
-		try {
-			connection = Database.getConnection();
-		}
-		catch(Exception e) {
-			e.printStackTrace();
-		}
-	}
+
 	
 	private static Map<String,String> encodeDay = Map.of("Monday","1","Tuesday","2","Wednesday","3","Thursday","4","Friday","5","Saturday","6","Sunday","7","Day","8");
-	private static Map<String,String> decodeDay = Map.of("1","MONDAY","2","TUESDAY","3","WEDNESDAY","4","THURSDAY","5","FRIDAY","6","SATURDAY","7","SUNDAY");
+//	private static Map<String,String> decodeDay = Map.of("1","MONDAY","2","TUESDAY","3","WEDNESDAY","4","THURSDAY","5","FRIDAY","6","SATURDAY","7","SUNDAY");
 	
 	private static Map<String,String> encodeWeek = Map.of("First","1","Second","2","Third","3","Fourth","4","Fifth","5","Last","6");
 	
@@ -87,14 +71,11 @@ public class ScheduleAction extends ActionSupport{
 		HttpServletRequest request = ServletActionContext.getRequest();
 		HttpServletResponse response = ServletActionContext.getResponse();
 		
+		response = CORS.resolve(response);
 		if("OPTIONS".equals(request.getMethod())) {
-			doOptions(request,response);
+			response.setStatus(HttpServletResponse.SC_OK);
 			return NONE;
 		}
-		
-		response.setHeader("Access-Control-Allow-Origin",ORIGIN_STRING);
-		response.setHeader("Access-Control-Allow-Methods","POST,GET,PUT,DELETE,OPTIONS");
-		response.setHeader("Access-Control-Allow-Headers","Content-Type, Authorization");
 		
 		BufferedReader reader = new BufferedReader(new InputStreamReader(request.getInputStream()));
 		StringBuilder builder = new StringBuilder();
@@ -109,14 +90,11 @@ public class ScheduleAction extends ActionSupport{
 	            responseData = new ByteArrayInputStream(gson.toJson(map).getBytes("UTF-8"));
 	            return ERROR;
 	    }
-//		System.out.println(builder.toString());
 		Schedule schedule = gson.fromJson(builder.toString(),Schedule.class);
-		
-//		System.out.println("Is Recurring: "+schedule.isRecurring());
 		
 		schedule = encodeSchedule(schedule);
 		
-		try {
+		try (Connection connection = Database.getConnection()){
 			String query = "insert into schedule(calendar_id,title,description,all_day,start_time,end_time,is_recurring,frequency,repeat_interval,day,date,month,week,offset) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 			PreparedStatement stmt = connection.prepareStatement(query);
 			stmt.setInt(1,schedule.getCalendarId());
@@ -161,42 +139,19 @@ public class ScheduleAction extends ActionSupport{
 		HttpServletRequest request = ServletActionContext.getRequest();
 		HttpServletResponse response = ServletActionContext.getResponse();
 		
+		response = CORS.resolve(response);
 		if("OPTIONS".equals(request.getMethod())) {
-			doOptions(request,response);
+			response.setStatus(HttpServletResponse.SC_OK);
 			return NONE;
 		}
-		response.setHeader("Access-Control-Allow-Origin",ORIGIN_STRING);
-		response.setHeader("Access-Control-Allow-Methods","POST,GET,PUT,DELETE,OPTIONS");
-		response.setHeader("Access-Control-Allow-Headers","Content-Type, Authorization");
+		
 		
 		List<Schedule> schedules = new ArrayList<>();
 		Gson gson = new Gson();
-		BufferedReader reader = new BufferedReader(new InputStreamReader(request.getInputStream()));
-		StringBuilder builder = new StringBuilder();
-		String line = "";
-		while((line=reader.readLine())!=null) {
-			builder.append(line);
-		}
-		 if (builder.toString().isEmpty()) {
-	            map.put("message", "No data received");
-	            map.put("status", "error");
-	            responseData = new ByteArrayInputStream(gson.toJson(map).getBytes("UTF-8"));
-	            return ERROR;
-	    }
-		System.out.println(builder.toString());
-		Schedule idSchedule = gson.fromJson(builder.toString(),Schedule.class);
-		int calendarId = 0;
-		if(idSchedule!=null) {
-			calendarId = idSchedule.getCalendarId();
-		}else {
-			map.put("message","Calendar id not found");
-			map.put("status","error");
-			responseData = new ByteArrayInputStream(gson.toJson(map).getBytes("UTF-8"));
-			return ERROR;
-		}
-//		System.out.println(calendarId);
+		int calendarId = Integer.parseInt(request.getParameter("id"));
 		String query = "select * from schedule where calendar_id = ?";
-		try(PreparedStatement stmt = connection.prepareStatement(query)){
+		try(Connection connection = Database.getConnection()){
+			PreparedStatement stmt = connection.prepareStatement(query);
 			stmt.setInt(1,calendarId);
 			ResultSet rs = stmt.executeQuery();
 			if(rs==null){
@@ -222,8 +177,6 @@ public class ScheduleAction extends ActionSupport{
 										rs.getInt("offset"),
 										rs.getInt("schedule_id")
 						);
-//				System.out.println("Rs "+newSchedule.getWeek());
-//				schedules.add(newSchedule);
 				schedules.addAll(populateSchedules(newSchedule));
 			}
 			if(schedules.size()>0) {
@@ -244,7 +197,6 @@ public class ScheduleAction extends ActionSupport{
 			responseData = new ByteArrayInputStream(gson.toJson(map).getBytes("UTF-8"));
 			return ERROR;
 		}
-//		return ERROR;
 	}
 	
 	
@@ -252,13 +204,12 @@ public class ScheduleAction extends ActionSupport{
 		HttpServletRequest request = ServletActionContext.getRequest();
 		HttpServletResponse response = ServletActionContext.getResponse();
 		
+		response = CORS.resolve(response);
 		if("OPTIONS".equals(request.getMethod())) {
-			doOptions(request,response);
+			response.setStatus(HttpServletResponse.SC_OK);
 			return NONE;
 		}
-		response.setHeader("Access-Control-Allow-Origin",ORIGIN_STRING);
-		response.setHeader("Access-Control-Allow-Methods","POST,GET,PUT,DELETE,OPTIONS");
-		response.setHeader("Access-Control-Allow-Headers","Content-Type, Authorization");
+		
 		
 		BufferedReader reader = new BufferedReader(new InputStreamReader(request.getInputStream()));
 		StringBuilder builder = new StringBuilder();
@@ -268,7 +219,7 @@ public class ScheduleAction extends ActionSupport{
 		}
 		Gson gson = new Gson();
 		Schedule schedule = gson.fromJson(builder.toString(),Schedule.class);
-		try {
+		try(Connection connection = Database.getConnection()) {
 			String query = "update schedule set title=?, description=?,all_day =?,start_time=?,end_time=?,is_recurring=?,frequency=?,repeat_interval=?,day=?,date=?,month=?,week=?,offset=? where schedule_id = ?";
 			PreparedStatement stmt = connection.prepareStatement(query);
 			stmt.setString(1,schedule.getTitle());
@@ -311,13 +262,11 @@ public class ScheduleAction extends ActionSupport{
 		HttpServletRequest request = ServletActionContext.getRequest();
 		HttpServletResponse response = ServletActionContext.getResponse();
 		
+		response = CORS.resolve(response);
 		if("OPTIONS".equals(request.getMethod())) {
-			doOptions(request,response);
+			response.setStatus(HttpServletResponse.SC_OK);
 			return NONE;
 		}
-		response.setHeader("Access-Control-Allow-Origin",ORIGIN_STRING);
-		response.setHeader("Access-Control-Allow-Methods","POST,GET,PUT,DELETE,OPTIONS");
-		response.setHeader("Access-Control-Allow-Headers","Content-Type, Authorization");
 		
 		BufferedReader reader = new BufferedReader(new InputStreamReader(request.getInputStream()));
 		StringBuilder builder = new StringBuilder();
@@ -328,7 +277,7 @@ public class ScheduleAction extends ActionSupport{
 		Gson gson = new Gson();
 		Schedule schedule = gson.fromJson(builder.toString(),Schedule.class);
 		
-		try {
+		try (Connection connection = Database.getConnection()){
 			String query = "delete from schedule where calendar_id =? and schedule_id = ?";
 			PreparedStatement stmt = connection.prepareStatement(query);
 			stmt.setInt(1,schedule.getCalendarId());
@@ -484,7 +433,6 @@ public class ScheduleAction extends ActionSupport{
 				while(!newStart.isAfter(yearEnd)) {
 					for(String date:dateArray) {
 						LocalDateTime newDate = newStart.withDayOfMonth(Integer.parseInt(date));
-//						System.out.println(Integer.parseInt(date)+" "+newDate);
 						if(newDate.isBefore(yearStart)) {
 							continue;
 						}
@@ -518,7 +466,6 @@ public class ScheduleAction extends ActionSupport{
 			if(schedule.getWeek()!=null) {
 				if(schedule.getDay().split(",")[0].equals("8")) {
 					while(!newStart.isAfter(yearEnd)) {
-//						System.out.println("Day:"+schedule.getDay().split(",")[0].equals("8"));
 						LocalDateTime newDate = newStart;
 						String type = schedule.getWeek();
 						System.out.println("New date"+newDate +" "+type);
@@ -626,24 +573,18 @@ public class ScheduleAction extends ActionSupport{
 					System.out.println("populated monthly...");
 					return recurringSchedules;
 				}
-//				return recurringSchedules;
 			}
 		}
 		
 		if("yearly".equals(schedule.getFrequency())) {
-//			System.out.println("Type at first: "+schedule.getMonth());
 			LocalDateTime newStart = startDate.toLocalDate().with(Month.valueOf(schedule.getMonth().toUpperCase())).atTime(startDate.toLocalTime());
 
-			
-//			recurringSchedules.add(new Schedule(schedule.getCalendarId(),schedule.getTitle(),schedule.getDescription(),schedule.isAllDay(),newStart.toString().replace("T"," "),endDate.toString().replace("T"," "),schedule.isRecurring(),schedule.getFrequency(),schedule.getRepeatInterval(),schedule.getDay(),schedule.getDate(),schedule.getWeek(),schedule.getMonth(),schedule.getOffset()));
-//			System.out.println(schedule.getMonth() +" "+ schedule.getDate());
 			yearEnd = yearEnd.plusYears(5);
 			if(schedule.getMonth()!=null && schedule.getDate()!=null) {
 				String[] dateArray = schedule.getDate().split(",");
 				while(!newStart.isAfter(yearEnd)) {
 					for(String date:dateArray) {
 						LocalDateTime newDate = newStart.withDayOfMonth(Integer.parseInt(date));
-//						System.out.println(newDate);
 						if(newDate.isBefore(yearStart)) {
 							continue;
 						}
@@ -668,7 +609,6 @@ public class ScheduleAction extends ActionSupport{
 					}
 					newStart = getYearlyInterval(newStart,schedule.getRepeatInterval());
 
-//					newStart = newStart.plusMonths(3);
 					System.out.println(newStart);
 				}
 				System.out.println("populated yearly....");
@@ -678,7 +618,6 @@ public class ScheduleAction extends ActionSupport{
 				if(schedule.getDay().split(",")[0].equals("8")) {
 					newStart = newStart.toLocalDate().with(Month.valueOf(schedule.getMonth().toUpperCase())).atTime(newStart.toLocalTime());
 					while(!newStart.isAfter(yearEnd)) {
-//						System.out.println("Day:"+schedule.getDay().split(",")[0].equals("8"));
 						LocalDateTime newDate = newStart;
 						String type = schedule.getWeek();
 						System.out.println("New date"+newDate +" "+type);

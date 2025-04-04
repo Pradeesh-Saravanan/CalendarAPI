@@ -81,4 +81,14 @@ Struts based Calendar API
 - Refactored com.model package to com.utils for naming convention
 - Dynamic method mapping works on login post and options method
 
+
+# 04/04/2025
+
+- Changed the method name setter implementation in customMapper from static to dynamic 
+- Handled unclosed database connections in the action methods 
+- Restructures the project packages according to semantics and scalability
+- Moved the CORS handling implementation in a separate class
+- Removed the access to tokens in the service action part and handled them in interceptors
+
+
 Note : To solve the inputName error thrown by struts xml file use non static getter and setter for inputstream variable in action 

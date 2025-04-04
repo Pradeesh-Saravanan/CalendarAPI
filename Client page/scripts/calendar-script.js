@@ -7,7 +7,7 @@ const nextButton = document.getElementById("next-year");
 
 let currentYear = new Date().getFullYear();
 const url = new URLSearchParams(window.location.search);
-const token = localStorage.getItem('token');
+// const token = localStorage.getItem('token');
 const user = url.get("user");
 const EVENT_FETCH_URL = `http://localhost:8080/CalendarAPI/event/post?user=${user}`;
 const EVENT_UPDATE_URL = `http://localhost:8080/CalendarAPI/event/put?user=${user}`;
@@ -88,7 +88,7 @@ function openSidebar() {
 
 
   async function addCalendar(){
-
+    const token = window.localStorage.getItem("token");
     if(!document.getElementById("calendar_name").value || !document.getElementById("description").value){
         alert("fill all fields");
     }
@@ -98,7 +98,7 @@ function openSidebar() {
     };
     console.log(calendar);  
     try{
-        const response = await fetch(`http://localhost:8080/CalendarAPI/calendar/post`,
+        const response = await fetch(`http://localhost:8080/CalendarAPI/calendar`,
             {
                 method:"POST",
                headers:{
@@ -131,13 +131,14 @@ function openSidebar() {
   
   async function fetchCalendars() {
     // alert("authenticated");
+    const token = window.localStorage.getItem("token");
     if (!token) {
         console.log("No token found");
         window.location.href="login.html";
         return;
     }
     try {
-        const response = await fetch(`http://localhost:8080/CalendarAPI/calendar/get`,
+        const response = await fetch(`http://localhost:8080/CalendarAPI/calendar`,
             {
                 method:"GET",
                 headers:{
@@ -146,22 +147,24 @@ function openSidebar() {
             }
         );
     if(!response.status===401 || !response.ok){
-    window.location.href="login.html";
+        logout();
     }
     const raw = await response.text()
     const data = JSON.parse(raw)
+    if(data.length!=0){
     if(first_time==false){
         changeView(data[0].calendar_name,data[0].calendar_id);
         first_time = true;
     }
     const list = document.getElementById("calendar_list");
     list.innerHTML = ``;
-    data.forEach(element=>{
-        const row = document.createElement("div");
-        row.innerHTML=`<button onClick="changeView('${element.calendar_name}','${element.calendar_id}')" style=" border:none; background-color:transparent; font-size:30px; color:white">${element.calendar_name}</button>
-                        <button onClick="editCalendar('${element.calendar_id}','${element.calendar_name}','${element.description}')" style=" border:none;  font-size:15px; ">✎</button>`;
-        list.appendChild(row);
-    });
+        data.forEach(element=>{
+            const row = document.createElement("div");
+            row.innerHTML=`<button onClick="changeView('${element.calendar_name}','${element.calendar_id}')" style=" border:none; background-color:transparent; font-size:30px; color:white">${element.calendar_name}</button>
+                            <button onClick="editCalendar('${element.calendar_id}','${element.calendar_name}','${element.description}')" style=" border:none;  font-size:15px; ">✎</button>`;
+            list.appendChild(row);
+        });
+    }
     } catch (error) {
         alert(error);
         window.location.href="login.html";
@@ -523,6 +526,7 @@ async function addEvent(year_in,month_in,day_in,URL){
     document.getElementById("event_form_button").addEventListener('click',async function (event){
         event.preventDefault();
         // let final_type= "";
+        document.getElementById("event_form_button").disabled =true;
         const title = document.getElementById("event_name").value;
         const description = document.getElementById("event_description").value;
 
@@ -650,7 +654,8 @@ async function addEvent(year_in,month_in,day_in,URL){
         console.log("package: ",package);
         // return;
         try{
-            const response = await fetch(`http://localhost:8080/CalendarAPI/schedule/post`,
+            const token = window.localStorage.getItem("token");
+            const response = await fetch(`http://localhost:8080/CalendarAPI/schedule`,
                 {
                     method:"POST",
                 headers:{
@@ -786,7 +791,8 @@ async function editCalendar(id,name,description){
             //     body:JSON.stringify(calendar)
             //     }
             // );
-            const response = await fetch(`http://localhost:8080/CalendarAPI/calendar/put?`,
+            const token = window.localStorage.getItem("token");
+            const response = await fetch(`http://localhost:8080/CalendarAPI/calendar`,
                 {
                     method:"PUT",
                     headers:{
@@ -797,7 +803,7 @@ async function editCalendar(id,name,description){
                 }
             );
             if(!response.status===401 || !response.ok){
-                window.location.href="login.html";
+                logout();
             }
             const raw = await response.text();
             const data = JSON.parse(raw);
@@ -821,19 +827,20 @@ async function editCalendar(id,name,description){
 
 async function fetchEvents() {
     try {
+        const token = window.localStorage.getItem("token");
         const package = {
             calendarId:calendar_id,
         };
         const list = document.getElementById("event_list");
         list.innerHTML = ``;
         // const response = await fetch(`${API_URL}event/get?user=${user}&calendar_id=${calendar_id}`);
-        const response = await fetch(`http://localhost:8080/CalendarAPI/schedule/get`,
+        const response = await fetch(`http://localhost:8080/CalendarAPI/schedule?id=${calendar_id}`,
             {
-                method:"POST",
+                method:"GET",
                 headers:{
                     'Authorization':`Bearer ${token}`,
                 },
-                body:JSON.stringify(package),
+                // body:JSON.stringify(package),
             }
         );
 
@@ -1127,9 +1134,10 @@ async function editEvent(title,start_time){
         }
         console.log("package: ",package);
         try{
-            const response = await fetch(`http://localhost:8080/CalendarAPI/schedule/put`,
+            const token = window.localStorage.getItem("token");
+            const response = await fetch(`http://localhost:8080/CalendarAPI/schedule`,
                 {
-                    method:"POST",
+                    method:"PUT",
                     headers:{
                         "Content-Type":"application/json",
                         "Authorization":`Bearer ${token}`,
@@ -1175,12 +1183,13 @@ async function editEvent(title,start_time){
 
 async function deleteEvent(schedule_id){
     try{
+        const token = window.localStorage.getItem("token");
         const package = {
             "calendarId":calendar_id,
             "schedule_id":schedule_id
         };
         // const response = await fetch(`http://localhost:8080/CalendarAPI/event/delete?user=${user}&name=${title}`);
-        const response = await fetch(`http://localhost:8080/CalendarAPI/schedule/delete`,
+        const response = await fetch(`http://localhost:8080/CalendarAPI/schedule`,
             {
                 method:"DELETE",
                 headers:{
@@ -1190,7 +1199,7 @@ async function deleteEvent(schedule_id){
             }
         );
         if(!response.status===401 || !response.ok){
-            window.location.href="login.html";
+            logout();
         }
         const raw = await response.text();
         const data = JSON.parse(raw);

@@ -17,60 +17,39 @@ import java.util.Map;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.apache.struts2.ServletActionContext;
 
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.interfaces.DecodedJWT;
+import com.auth.CORS;
 import com.google.gson.Gson;
+import com.model.Calendar;
 import com.opensymphony.xwork2.ActionSupport;
-import com.utils.Calendar;
 import com.utils.Database;
 
 public class CalendarAction extends ActionSupport {
 
 	private static final long serialVersionUID = 2371873185954435378L;
-	private final String ORIGIN_STRING = "http://127.0.0.1:5501";
 	private Map<String,String> map = new HashMap<>();
 	private String user_id = "";
 	private String user;
-	private InputStream inputStream;
-	public void doOptions(HttpServletRequest request,HttpServletResponse response) {
-		response.setHeader("Access-Control-Allow-Origin",ORIGIN_STRING);
-		response.setHeader("Access-Control-Allow-Methods","GET,POST,DELETE,PUT,OPTIONS");
-		response.setHeader("Access-Control-Allow-Credentials","true");
-		response.setHeader("Access-Control-Allow-Headers","Content-Type,Authorization");
-		response.setStatus(HttpServletResponse.SC_OK);
-	}
+	private InputStream inputStream = new ByteArrayInputStream("null".getBytes());
 	
 	public String doDelete() throws ServletException,IOException,ClassNotFoundException{
 		HttpServletRequest request = ServletActionContext.getRequest();
 		HttpServletResponse response = ServletActionContext.getResponse();
 		
+		response = CORS.resolve(response);
 		if("OPTIONS".equals(request.getMethod())) {
-			doOptions(request,response);
+			response.setStatus(HttpServletResponse.SC_OK);
 			return NONE;
 		}
 		
-		response.setHeader("Access-Control-Allow-Origin",ORIGIN_STRING);
-		response.setHeader("Access-Control-Allow-Methods","GET,POST,DELETE,PUT,OPTIONS");
-		response.setHeader("Access-Control-Allow-Credentials","true");
-		response.setHeader("Access-Control-Allow-Header","Content-Type,Authorization");
-		String authHeader = request.getHeader("Authorization");
-		if(authHeader!=null && authHeader.startsWith("Bearer ")) {
-			String token = authHeader.substring(7);
-			Algorithm algorithm = Algorithm.HMAC256("secretKey");
-			DecodedJWT decoded = JWT.require(algorithm).build().verify(token);
-			setUser(decoded.getSubject());
-		}
-		else {
-			map.put("status","failed");
-			map.put("message","Auth token error");
-			Gson gson = new Gson();
-			inputStream = new ByteArrayInputStream(gson.toJson(map).getBytes(StandardCharsets.UTF_8));
-			return ERROR;
-		}
+//		JWTInterceptor obj = new JWTInterceptor();
+//		setUser(obj.getUsername());
+		HttpSession session = request.getSession();
+		setUser((String)session.getAttribute("username"));
+			
 		
 		try(Connection conn = Database.getConnection()){
 			String user_query = "select user_id from users where username = ?";
@@ -114,30 +93,15 @@ public class CalendarAction extends ActionSupport {
 		HttpServletRequest request = ServletActionContext.getRequest();
 		HttpServletResponse response = ServletActionContext.getResponse();
 		
-		if("OPTIONS".equals(request.getMethod()))
-		{
-			doOptions(request,response);
+		response = CORS.resolve(response);
+		if("OPTIONS".equals(request.getMethod())) {
+			response.setStatus(HttpServletResponse.SC_OK);
 			return NONE;
 		}
-		response.setHeader("Access-Control-Allow-Origin",ORIGIN_STRING);
-		response.setHeader("Access-Control-Allow-Methods","GET,POST,DELETE,PUT,OPTIONS");
-		response.setHeader("Access-Control-Allow-Credentials","true");
-		response.setHeader("Access-Control-Allow-Headers","Content-Type,Authorization");
+//		setUser(JWTInterceptor.getUsername());
+		HttpSession session = request.getSession();
+		setUser((String)session.getAttribute("username"));
 		
-		String authHeader = request.getHeader("Authorization");
-		if(authHeader!=null && authHeader.startsWith("Bearer ")) {
-			String token = authHeader.substring(7);
-			Algorithm algorithm = Algorithm.HMAC256("secretKey");
-			DecodedJWT decoded = JWT.require(algorithm).build().verify(token);
-			setUser(decoded.getSubject());
-		}
-		else {
-			map.put("status","failed");
-			map.put("message","Auth token error");
-			Gson gson = new Gson();
-			inputStream = new ByteArrayInputStream(gson.toJson(map).getBytes(StandardCharsets.UTF_8));
-			return ERROR;
-		}
 		BufferedReader reader = new BufferedReader(new InputStreamReader(request.getInputStream()));
 		StringBuilder sb = new StringBuilder();
 		String line = "";
@@ -190,36 +154,19 @@ public class CalendarAction extends ActionSupport {
 		HttpServletRequest request = ServletActionContext.getRequest();
 		HttpServletResponse response = ServletActionContext.getResponse();
 		
-		if("OPTIONS".equals(request.getMethod())) {
-			doOptions(request,response);
-			return NONE;
-		}
+		response = CORS.resolve(response);
 		
-		response.setHeader("Access-Control-Allow-Origin",ORIGIN_STRING);
-		response.setHeader("Access-Control-Allow-Methods","GET,POST,DELETE,PUT,OPTIONS");
-		response.setHeader("Access-Control-Allow-Headers","Content-Type, Authorization");
-		response.setHeader("Access-Control-Allow-Credentials","true");
-		System.out.println("Calendar API is running....");
+		System.out.println("Calendar API is running...."+request.getMethod());
+//		setUser(JWTInterceptor.getUsername());
+		HttpSession session = request.getSession();
+		setUser((String)session.getAttribute("username"));
 		
-		String authHeader = request.getHeader("Authorization");
-		if(authHeader!=null && authHeader.startsWith("Bearer ")) {
-			String token = authHeader.substring(7);
-			Algorithm algorithm = Algorithm.HMAC256("secretKey");
-			DecodedJWT decoded = JWT.require(algorithm).build().verify(token);
-			setUser(decoded.getSubject());
-		}
-		else {
-			map.put("status","failed");
-			map.put("message","Auth token error");
-			Gson gson = new Gson();
-			inputStream = new ByteArrayInputStream(gson.toJson(map).getBytes(StandardCharsets.UTF_8));
-			return ERROR;
-		}
-		
+		System.out.println("Username: "+(String)session.getAttribute("username"));
 		try(Connection conn = Database.getConnection()){
 			String user_query = "select user_id from users where username = ?";
 			PreparedStatement stmt = conn.prepareStatement(user_query);
 			stmt.setString(1,getUser());
+			System.out.println(getUser());
 			ResultSet rs = stmt.executeQuery();
 			if(rs.next()) {
 				String user_id = rs.getString("user_id");
@@ -263,31 +210,17 @@ public class CalendarAction extends ActionSupport {
 		HttpServletRequest request = ServletActionContext.getRequest();
 		HttpServletResponse response = ServletActionContext.getResponse();
 		
+		response = CORS.resolve(response);
 		if("OPTIONS".equals(request.getMethod())) {
-			doOptions(request,response);
-			setInputStream(new ByteArrayInputStream("".getBytes(StandardCharsets.UTF_8)));
+			response.setStatus(HttpServletResponse.SC_OK);
 			return NONE;
 		}
-		response.setHeader("Access-Control-Allow-Origin",ORIGIN_STRING);
-		response.setHeader("Access-Control-Allow-Credentials","true");
-		response.setHeader("Access-Control-Allow-Headers","Content-Type, Authorization");
-		response.setHeader("Access-Control-Allow-Methods","GET,POST,PUT,DELETE,OPTIONS");
-		System.out.println("Calendar API running.....");
 		
-		String authHeader = request.getHeader("Authorization");
-		if(authHeader!=null && authHeader.startsWith("Bearer ")) {
-			String token = authHeader.substring(7);
-			Algorithm algorithm = Algorithm.HMAC256("secretKey");
-			DecodedJWT decoded = JWT.require(algorithm).build().verify(token);
-			setUser(decoded.getSubject());
-		}
-		else {
-			map.put("status","failed");
-			map.put("message","Auth token error");
-			Gson gson = new Gson();
-			inputStream = new ByteArrayInputStream(gson.toJson(map).getBytes(StandardCharsets.UTF_8));
-			return ERROR;
-		}
+		System.out.println("Calendar API running.....");
+//		setUser(JWTInterceptor.getUsername());
+		HttpSession session = request.getSession();
+		setUser((String)session.getAttribute("username"));
+
 		BufferedReader reader = new BufferedReader(new InputStreamReader(request.getInputStream()));
 		StringBuilder sb = new StringBuilder();
 		String line = "";
@@ -348,5 +281,6 @@ public class CalendarAction extends ActionSupport {
 	public void setUser(String user) {
 		this.user = user;
 	}
+	
 	
 }

@@ -12,7 +12,7 @@ async function login(event){
     }
 
     try {
-        const response = await fetch("http://localhost:8080/StorageAPI_Struts/register", {
+        const response = await fetch("http://localhost:8080/CalendarAPI/register", {
             method: "POST",
             headers: {
                 'Content-Type': 'application/json',

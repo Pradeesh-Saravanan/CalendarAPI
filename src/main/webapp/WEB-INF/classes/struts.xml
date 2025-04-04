@@ -12,12 +12,38 @@
         		
         		
         		<package name = "default" extends = "struts-default">
+        			<interceptors>
+        				<interceptor name="authInterceptor" class = "com.service.JWTInterceptor"/>
+        			</interceptors>
         			<action name ="login" class = "com.service.LoginJWT">
         				<result name = "*" type = "stream">
         					<param name = "contentType">application/json</param>
         					<param name = "inputName">responseData</param>
         				</result>
-        				<allowed-methods>create,doOptions</allowed-methods>
+        				<allowed-methods>post_login,doPost</allowed-methods>
+        			</action>
+        			<action name ="calendar" class = "com.service.CalendarAction">
+        				<interceptor-ref name="authInterceptor"></interceptor-ref>
+        				<result name = "*" type = "stream">
+        					<param name = "contentType">application/json</param>
+        					<param name = "inputName">inputStream</param>
+        				</result>
+        				<allowed-methods>doGet,doPost,doPut,doDelete</allowed-methods>
+        			</action>
+        			<action name ="schedule" class = "com.service.ScheduleAction">
+        				<interceptor-ref name = "authInterceptor"/>
+        				<result name = "*" type = "stream">
+        					<param name = "contentType">application/json</param>
+        					<param name = "inputName">responseData</param>
+        				</result>
+        				<allowed-methods>doGet,doPost,doPut,doDelete</allowed-methods>
+        			</action>
+        			<action name ="register" class = "com.service.Registration">
+        				<result name = "*" type = "stream">
+        					<param name = "contentType">application/json</param>
+        					<param name = "inputName">responseData</param>
+        				</result>
+        				<allowed-methods>doPost</allowed-methods>
         			</action>
         		</package>
         

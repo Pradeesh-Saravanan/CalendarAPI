@@ -18,22 +18,31 @@ public class CustomMapper implements ActionMapper {
 		String uri = request.getRequestURI();
 		ActionMapping mapping = new ActionMapping();
 		HttpServletResponse response = ServletActionContext.getResponse();
-//		System.out.println(uri.equals("/CalendarAPI/login") & request.getMethod()=="POST");
-//		System.out.println(uri.equals("/CalendarAPI/login"));
-//		System.out.println(request.getMethod().equals("POST"));
 		try {
-			if(uri.equals("/CalendarAPI/login") && request.getMethod().equals("OPTIONS")) {
-				response.setHeader("Access-Control-Allow-Origin",ORIGIN_STRING);
-				response.setHeader("Access-Control-Allow-Methods","GET,POST,PUT,DELETE,OPTIONS");
-				response.setHeader("Access-Control-Allow-Headers","Content-Type, Authorization");
-				response.setStatus(HttpServletResponse.SC_OK);
-				return null;
-			}
-			else if(uri.equals("/CalendarAPI/login") && request.getMethod().equals("POST")) {
-				System.out.println(uri);
-				System.out.println(mapping.getName()+" "+mapping.getMethod());
-				mapping.setName("login");
-				mapping.setMethod("post_login");
+			mapping.setName(getMethodName(uri));
+			String method = request.getMethod().toUpperCase();
+			switch(method) {
+				case "OPTIONS":
+					response.setHeader("Access-Control-Allow-Origin",ORIGIN_STRING);
+					response.setHeader("Access-Control-Allow-Methods","GET,POST,PUT,DELETE,OPTIONS");
+					response.setHeader("Access-Control-Allow-Headers","Content-Type, Authorization");
+					response.setStatus(HttpServletResponse.SC_OK);
+					return null;
+				case "POST":
+					mapping.setMethod("doPost");
+					break;
+				case "GET":
+					mapping.setMethod("doGet");
+					break;
+				case "PUT":
+					mapping.setMethod("doPut");
+					break;
+				case "DELETE":
+					mapping.setMethod("doDelete");
+					break;
+				default:
+					mapping.setMethod("doGet");
+					break;
 			}
 			System.out.println(request.getMethod());
 			return mapping;
@@ -44,6 +53,9 @@ public class CustomMapper implements ActionMapper {
 		}
 	}
 
+	public String getMethodName(String uri) {
+		return uri.split("CalendarAPI/")[1];
+	}
 	@Override
 	public ActionMapping getMappingFromActionName(String arg0) {
 		// TODO Auto-generated method stub
